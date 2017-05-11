@@ -34,7 +34,6 @@ const updatePlant = (data) => {
 const updateAllPlants = (data) => {
     draws = data;
     console.log("update all plants");
-    console.log(data);
     //draw();
 }
 

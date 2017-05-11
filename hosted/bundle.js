@@ -414,7 +414,6 @@ var updatePlant = function updatePlant(data) {
 var updateAllPlants = function updateAllPlants(data) {
     draws = data;
     console.log("update all plants");
-    console.log(data);
     //draw();
 };
 

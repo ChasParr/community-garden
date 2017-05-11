@@ -60,7 +60,7 @@ const createNewRoom = () => {
       }
       newRoom.Plants[i] = plant;
     }
-    io.sockets.in(newRoom.roomName).emit('updateAllPlants', newRoom.Plants);
+    //io.sockets.in(newRoom.roomName).emit('updateAllPlants', newRoom.Plants);
   };
 
   newRoom.Func.checkWatering = function () {
@@ -78,19 +78,21 @@ const createNewRoom = () => {
               if (checkWaterColl(user.x, newRoom.Plants[j].x) && newRoom.Plants[j].water < 100) {
                 newRoom.Plants[j].water++;
                 user.points++;
-
+/*
                 io.sockets.in(newRoom.roomName).emit('updatePlant', {
                   index: i, plant: newRoom.Plants[i],
                 });
+                */
               }
             }
             user.water--;
           }
           Users[newRoom.Watering[i]] = user;
-
+/*
           io.sockets.in(newRoom.roomName).emit('updateUsers', {
             user,
           });
+          */
         }
       }
     }
@@ -206,13 +208,13 @@ const onJoin = (sock) => {
     Users[socket.uid].x = data.x;
     Users[socket.uid].y = data.y;
             // console.log(data);
-
+/*
     io.sockets.in(socket.roomName).emit('moveUser', {
       id: socket.uid,
       newX: data.x,
       newY: data.y,
     });
-
+*/
     // }
   });
 
@@ -236,17 +238,20 @@ const onJoin = (sock) => {
     };
     Rooms[socket.rNum].Plants.push(newPlant);
     const newIndex = Rooms[socket.rNum].Plants.length - 1;
+      /*
     io.sockets.in(socket.roomName).emit('updatePlant', {
       index: newIndex, plant: Rooms[socket.rNum].Plants[newIndex],
     });
+    */
   });
 
   socket.on('updateUser', (data) => {
     Users[data.id] = data;
-
+/*
     io.sockets.in(socket.roomName).emit('updateUsers', {
       user: Users[data.id],
     });
+    */
   });
 
 
@@ -255,10 +260,11 @@ const onJoin = (sock) => {
     if (data === 'watering') {
       Rooms[socket.rNum].Watering.push(socket.uid);
     }
-
+/*
     io.sockets.in(socket.roomName).emit('updateUsers', {
       user: Users[socket.uid],
     });
+*/
   });
 
   socket.on('changeName', (data) => {
@@ -283,10 +289,11 @@ const onJoin = (sock) => {
             // set new name
       Users[socket.uid].name = newName;
             // update clients
-
+/*
       io.sockets.in(socket.roomName).emit('updateUsers', {
         user: Users[socket.uid],
       });
+      */
     }
   });
 };
@@ -302,6 +309,7 @@ const updatePlantGrowth = () => {
   for (let i = 0; i < Rooms.length; i++) {
     Rooms[i].Func.updatePlants();
   }
+    console.log('plants updated')
 };
 
 const updateWater = () => {
@@ -309,13 +317,13 @@ const updateWater = () => {
     Rooms[i].Func.checkWatering();
   }
 };
-/*
+
 const updateTick = () => {
   for (let i = 0; i < Rooms.length; i++) {
     Rooms[i].Func.syncClients();
   }
 };
-*/
+
 
 const setupSockets = (ioServer) => {
   io = ioServer;
@@ -330,11 +338,11 @@ const setupSockets = (ioServer) => {
   setInterval(() => {
     updateWater();
   }, 100);
-/*
+
   setInterval(() => {
     updateTick();
   }, 16);
-  */
+  
 };
 
 module.exports.setupSockets = setupSockets;
