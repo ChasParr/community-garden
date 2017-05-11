@@ -153,7 +153,6 @@ const init = () => {
     socket.on('newMessage', newMessage);
     socket.on('denied', denied);
     socket.on('syncRoom', syncAll);
-
     // in host.js
 
 

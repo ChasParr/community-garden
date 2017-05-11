@@ -66,15 +66,6 @@ var draw = function draw() {
             var drawCall = draws[i];
             ctx.drawImage(plantSpritesheet, plantSpriteSizes.WIDTH * drawCall.stage, plantSpriteSizes.HEIGHT * drawCall.spriteRow, drawCall.width, drawCall.height, drawCall.x - drawCall.width / 2, drawCall.y - drawCall.height, drawCall.width, drawCall.height);
         }
-
-        // draw rollover info
-        if (hoverLock >= 0) {
-            drawOverlay(draws[hoverLock], ctx.strokeStyle = 'rgb(255,0,0)');
-        }
-
-        if (hoverTarget >= 0 && hoverTarget !== hoverLock) {
-            drawOverlay(draws[hoverTarget], 'rgb(250,255,255)');
-        }
     }
 
     // draw players
@@ -126,6 +117,15 @@ var draw = function draw() {
         }
     }
 
+    // draw rollover info
+    if (hoverLock >= 0) {
+        drawOverlay(draws[hoverLock], 'rgb(255,0,0)');
+    }
+
+    if (hoverTarget >= 0 && hoverTarget !== hoverLock) {
+        drawOverlay(draws[hoverTarget], 'rgb(250,255,255)');
+    }
+
     // draw UI
 
     for (var _i2 = 0; _i2 < ui.length; _i2++) {
@@ -164,7 +164,7 @@ var displayUsers = function displayUsers() {
     var userList = document.querySelector("#userList");
     // clear box
     userList.innerHTML = "";
-
+    //console.log(users);
     for (var i = 0; i < rooms[roomNum].UserIds.length; i++) {
         var user = document.createElement("LI");
         user.style.color = users[rooms[roomNum].UserIds[i]].color;
@@ -346,7 +346,6 @@ var init = function init() {
     socket.on('newMessage', newMessage);
     socket.on('denied', denied);
     socket.on('syncRoom', syncAll);
-
     // in host.js
 
 
@@ -385,14 +384,14 @@ var updateRoom = function updateRoom(data) {
     //console.log(data.room);
     // check if client is now the host
     draws = data.room.Plants;
-    displayUsers();
+    //displayUsers();
 };
 
 var updateUsers = function updateUsers(data) {
     users[data.user.id] = data.user;
     console.log(data.user);
 
-    displayUsers();
+    //displayUsers();
 };
 
 var updateUserPosition = function updateUserPosition(data) {
@@ -404,7 +403,7 @@ var updateUserPosition = function updateUserPosition(data) {
 var removeUser = function removeUser(data) {
     delete users[data.id];
     rooms[roomNum].UserIds.splice(rooms[roomNum].UserIds.indexOf(data.id), 1);
-    displayUsers();
+    //displayUsers();
 };
 
 var updatePlant = function updatePlant(data) {
@@ -424,7 +423,7 @@ var syncAll = function syncAll(data) {
     draws = data.Plants;
     users = data.Users;
     //draw();
-    //displayUsers();
+    displayUsers();
     //console.log(data);
 };
 

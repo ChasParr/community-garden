@@ -123,14 +123,6 @@ const draw = () => {
             );
         }
 
-        // draw rollover info
-        if (hoverLock >= 0) {
-            drawOverlay(draws[hoverLock], ctx.strokeStyle = 'rgb(255,0,0)');
-        }
-        
-        if (hoverTarget >= 0 && hoverTarget !== hoverLock) {
-            drawOverlay(draws[hoverTarget], 'rgb(250,255,255)');
-        }
     }
 
     // draw players
@@ -245,6 +237,15 @@ const draw = () => {
             );
         }
     }
+    
+    // draw rollover info
+    if (hoverLock >= 0) {
+        drawOverlay(draws[hoverLock], 'rgb(255,0,0)');
+    }
+
+    if (hoverTarget >= 0 && hoverTarget !== hoverLock) {
+        drawOverlay(draws[hoverTarget], 'rgb(250,255,255)');
+    }
 
     // draw UI
 
@@ -325,7 +326,7 @@ const displayUsers = () => {
     const userList = document.querySelector("#userList");
     // clear box
     userList.innerHTML = "";
-
+    //console.log(users);
     for (let i = 0; i < rooms[roomNum].UserIds.length; i++) {
         let user = document.createElement("LI");
         user.style.color = users[rooms[roomNum].UserIds[i]].color;

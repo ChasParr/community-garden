@@ -3,26 +3,26 @@ const updateRoom = (data) => {
     //console.log(data.room);
     // check if client is now the host
     draws = data.room.Plants;
-    displayUsers();
+    //displayUsers();
 }
 
 const updateUsers = (data) => {
     users[data.user.id] = data.user;
     console.log(data.user);
 
-    displayUsers();
+    //displayUsers();
 }
 
 const updateUserPosition = (data) => {
     //console.log('getMove');
     users[data.id].x = data.newX;
     users[data.id].y = data.newY;
-}
+} 
 
 const removeUser = (data) => {
     delete users[data.id];
     rooms[roomNum].UserIds.splice(rooms[roomNum].UserIds.indexOf(data.id), 1);
-    displayUsers();
+    //displayUsers();
 }
 
 const updatePlant = (data) => {
@@ -43,7 +43,7 @@ const syncAll = (data) => {
     draws = data.Plants;
     users = data.Users;
     //draw();
-    //displayUsers();
+    displayUsers();
     //console.log(data);
 }
 

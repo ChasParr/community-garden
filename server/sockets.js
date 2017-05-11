@@ -245,11 +245,10 @@ const onJoin = (sock) => {
 
   socket.on('updateUser', (data) => {
     Users[data.id] = data;
-      /*
+
     io.sockets.in(socket.roomName).emit('updateUsers', {
       user: Users[data.id],
     });
-    */
   });
 
 
