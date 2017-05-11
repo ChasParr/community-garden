@@ -13,6 +13,7 @@ let messages = [];
 let hoverTarget = -1;
 let hoverLock = -1;
 let uiHover = -1;
+let lastUpdate;
 
 // game constants
 const HEIGHT = 500;
@@ -108,7 +109,7 @@ const setupUI = () => {
 }
 
 const init = () => {
-    
+    lastUpdate = new Date().getTime();
     plantSpritesheet = document.querySelector('#plantSpritesheet');
     UISpritesheet = document.querySelector('#UISpritesheet');
     

@@ -39,10 +39,13 @@ const updateAllPlants = (data) => {
 
 const syncAll = (data) => {
     //console.log("sync all");
-    draws = data.Plants;
-    users = data.Users;
-    //draw();
-    displayUsers();
+    if (data.Time >  lastUpdate){
+        lastUpdate = data.Time;
+        draws = data.Plants;
+        users = data.Users;
+        //draw();
+        displayUsers();
+    }
     //console.log(data);
 }
 

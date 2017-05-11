@@ -207,6 +207,7 @@ var messages = [];
 var hoverTarget = -1;
 var hoverLock = -1;
 var uiHover = -1;
+var lastUpdate = void 0;
 
 // game constants
 var HEIGHT = 500;
@@ -301,7 +302,7 @@ var setupUI = function setupUI() {
 };
 
 var init = function init() {
-
+    lastUpdate = new Date().getTime();
     plantSpritesheet = document.querySelector('#plantSpritesheet');
     UISpritesheet = document.querySelector('#UISpritesheet');
 
@@ -419,10 +420,13 @@ var updateAllPlants = function updateAllPlants(data) {
 
 var syncAll = function syncAll(data) {
     //console.log("sync all");
-    draws = data.Plants;
-    users = data.Users;
-    //draw();
-    displayUsers();
+    if (data.Time > lastUpdate) {
+        lastUpdate = data.Time;
+        draws = data.Plants;
+        users = data.Users;
+        //draw();
+        displayUsers();
+    }
     //console.log(data);
 };
 

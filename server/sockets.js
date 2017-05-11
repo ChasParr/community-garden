@@ -60,7 +60,7 @@ const createNewRoom = () => {
       }
       newRoom.Plants[i] = plant;
     }
-    //io.sockets.in(newRoom.roomName).emit('updateAllPlants', newRoom.Plants);
+    // io.sockets.in(newRoom.roomName).emit('updateAllPlants', newRoom.Plants);
   };
 
   newRoom.Func.checkWatering = function () {
@@ -99,7 +99,7 @@ const createNewRoom = () => {
   };
 
   newRoom.Func.syncClients = function () {
-    io.sockets.in(newRoom.roomName).emit('syncRoom', { Plants: newRoom.Plants, Users });
+    io.sockets.in(newRoom.roomName).emit('syncRoom', { Plants: newRoom.Plants, Users, Time: new Date().getTime() });
   };
 
   Rooms.push(newRoom);
@@ -137,6 +137,7 @@ const onJoin = (sock) => {
       points: 0,
       water: 100,
       mode: 'none',
+      //lastUpdate: new Date().getTime()
     };
 
         // add name to indicate it is taken
@@ -207,6 +208,7 @@ const onJoin = (sock) => {
       // console.log(data);
     Users[socket.uid].x = data.x;
     Users[socket.uid].y = data.y;
+    // Users[socket.uid].lastUpdate = new Date.getTime();
             // console.log(data);
 /*
     io.sockets.in(socket.roomName).emit('moveUser', {
@@ -235,9 +237,10 @@ const onJoin = (sock) => {
       height: PLANTS[data.type].HEIGHT[0],
       width: PLANTS[data.type].WIDTH[0],
       spriteRow: PLANTS[data.type].SPRITE_ROW,
+      //lastUpdate: new Date.getTime()
     };
     Rooms[socket.rNum].Plants.push(newPlant);
-    const newIndex = Rooms[socket.rNum].Plants.length - 1;
+    // const newIndex = Rooms[socket.rNum].Plants.length - 1;
       /*
     io.sockets.in(socket.roomName).emit('updatePlant', {
       index: newIndex, plant: Rooms[socket.rNum].Plants[newIndex],
@@ -247,6 +250,7 @@ const onJoin = (sock) => {
 
   socket.on('updateUser', (data) => {
     Users[data.id] = data;
+    // Users[data.id].lastUpdate = new Date.getTime();
 /*
     io.sockets.in(socket.roomName).emit('updateUsers', {
       user: Users[data.id],
@@ -260,6 +264,7 @@ const onJoin = (sock) => {
     if (data === 'watering') {
       Rooms[socket.rNum].Watering.push(socket.uid);
     }
+    // Users[socket.uid].lastUpdate = new Date.getTime();
 /*
     io.sockets.in(socket.roomName).emit('updateUsers', {
       user: Users[socket.uid],
@@ -288,6 +293,7 @@ const onJoin = (sock) => {
       Names[newName] = socket.uid;
             // set new name
       Users[socket.uid].name = newName;
+      // Users[socket.uid].lastUpdate = new Date.getTime();
             // update clients
 /*
       io.sockets.in(socket.roomName).emit('updateUsers', {
@@ -309,7 +315,7 @@ const updatePlantGrowth = () => {
   for (let i = 0; i < Rooms.length; i++) {
     Rooms[i].Func.updatePlants();
   }
-    console.log('plants updated')
+  //console.log('plants updated');
 };
 
 const updateWater = () => {
@@ -342,7 +348,6 @@ const setupSockets = (ioServer) => {
   setInterval(() => {
     updateTick();
   }, 16);
-  
 };
 
 module.exports.setupSockets = setupSockets;
