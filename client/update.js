@@ -3,14 +3,14 @@ const updateRoom = (data) => {
     //console.log(data.room);
     // check if client is now the host
     draws = data.room.Plants;
-    //displayUsers();
+    displayUsers();
 }
 
 const updateUsers = (data) => {
     users[data.user.id] = data.user;
     console.log(data.user);
 
-    //displayUsers();
+    displayUsers();
 }
 
 const updateUserPosition = (data) => {
@@ -22,7 +22,7 @@ const updateUserPosition = (data) => {
 const removeUser = (data) => {
     delete users[data.id];
     rooms[roomNum].UserIds.splice(rooms[roomNum].UserIds.indexOf(data.id), 1);
-    //displayUsers();
+    displayUsers();
 }
 
 const updatePlant = (data) => {

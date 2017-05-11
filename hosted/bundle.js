@@ -384,14 +384,14 @@ var updateRoom = function updateRoom(data) {
     //console.log(data.room);
     // check if client is now the host
     draws = data.room.Plants;
-    //displayUsers();
+    displayUsers();
 };
 
 var updateUsers = function updateUsers(data) {
     users[data.user.id] = data.user;
     console.log(data.user);
 
-    //displayUsers();
+    displayUsers();
 };
 
 var updateUserPosition = function updateUserPosition(data) {
@@ -403,7 +403,7 @@ var updateUserPosition = function updateUserPosition(data) {
 var removeUser = function removeUser(data) {
     delete users[data.id];
     rooms[roomNum].UserIds.splice(rooms[roomNum].UserIds.indexOf(data.id), 1);
-    //displayUsers();
+    displayUsers();
 };
 
 var updatePlant = function updatePlant(data) {

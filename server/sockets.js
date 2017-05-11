@@ -60,7 +60,7 @@ const createNewRoom = () => {
       }
       newRoom.Plants[i] = plant;
     }
-    // io.sockets.in(newRoom.roomName).emit('updateAllPlants', newRoom.Plants);
+     io.sockets.in(newRoom.roomName).emit('updateAllPlants', newRoom.Plants);
   };
 
   newRoom.Func.checkWatering = function () {
@@ -78,21 +78,21 @@ const createNewRoom = () => {
               if (checkWaterColl(user.x, newRoom.Plants[j].x) && newRoom.Plants[j].water < 100) {
                 newRoom.Plants[j].water++;
                 user.points++;
-                            /*
+                            
                             io.sockets.in(newRoom.roomName).emit('updatePlant', {
                                 index: i, plant: newRoom.Plants[i]
                             });
-                            */
+                            
               }
             }
             user.water--;
           }
           Users[newRoom.Watering[i]] = user;
-                  /*
+                  
                   io.sockets.in(newRoom.roomName).emit('updateUsers', {
                       user: user
                   });
-                  */
+                  
         }
       }
     }
@@ -208,13 +208,13 @@ const onJoin = (sock) => {
     Users[socket.uid].x = data.x;
     Users[socket.uid].y = data.y;
             // console.log(data);
-        /*
+        
       io.sockets.in(socket.roomName).emit('moveUser', {
         id: socket.uid,
         newX: data.x,
         newY: data.y
       });
-      */
+      
     // }
   });
 
@@ -257,11 +257,11 @@ const onJoin = (sock) => {
     if (data === 'watering') {
       Rooms[socket.rNum].Watering.push(socket.uid);
     }
-      /*
+      
     io.sockets.in(socket.roomName).emit('updateUsers', {
       user: Users[socket.uid]
     });
-    */
+    
   });
 
   socket.on('changeName', (data) => {
@@ -286,11 +286,11 @@ const onJoin = (sock) => {
             // set new name
       Users[socket.uid].name = newName;
             // update clients
-        /*
+        
       io.sockets.in(socket.roomName).emit('updateUsers', {
         user: Users[socket.uid],
       });
-      */
+      
     }
   });
 };
@@ -334,10 +334,11 @@ const setupSockets = (ioServer) => {
   setInterval(() => {
     updateWater();
   }, 100);
-
+/*
   setInterval(() => {
     updateTick();
   }, 16);
+  */
 };
 
 module.exports.setupSockets = setupSockets;
