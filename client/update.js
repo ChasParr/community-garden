@@ -39,12 +39,12 @@ const updateAllPlants = (data) => {
 }
 
 const syncAll = (data) => {
-    console.log("sync all");
+    //console.log("sync all");
     draws = data.Plants;
     users = data.Users;
     //draw();
-    displayUsers();
-    console.log(data);
+    //displayUsers();
+    //console.log(data);
 }
 
 const syncName = () => {

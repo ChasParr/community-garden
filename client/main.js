@@ -11,7 +11,7 @@ let users = {};
 let rooms = [];
 let messages = [];
 let hoverTarget = -1;
-let hoverLocked = false;
+let hoverLock = -1;
 let uiHover = -1;
 
 // game constants
@@ -36,15 +36,14 @@ const handleMove = (e) => {
         }
     }
     // check for hover
-    if (!hoverLocked){
-        hoverTarget = -1;
-        for (let i = draws.length - 1; i >= 0; i--){
-            if (Math.abs(newX - draws[i].x) < draws[i].width / 2 && draws[i].y - newY < draws[i].height && draws[i].y - newY > 0){
-                hoverTarget = i;
-                break;
-            }
+    hoverTarget = -1;
+    for (let i = draws.length - 1; i >= 0; i--){
+        if (Math.abs(newX - draws[i].x) < draws[i].width / 2 && draws[i].y - newY < draws[i].height && draws[i].y - newY > 0){
+            hoverTarget = i;
+            break;
         }
     }
+    
 }
 
 const handleClick = (e) => {
@@ -56,20 +55,16 @@ const handleClick = (e) => {
         } else if (users[id].mode === 'seed'){
             socket.emit('newPlant', {x: users[id].x, type: 'daisy'});
         } else {
-            if (hoverTarget >= 0 && !hoverLocked){
-                hoverLocked = true;
-            } else if (hoverLocked){
-                let x = e.clientX - canvas.offsetLeft;
-                let y = e.clientY - canvas.offsetTop;
-                let target = draws[hoverTarget];
-                if (Math.abs(x - target.x) < target.width / 2 && target.y - y < target.height && target.y - y > 0){
-                    hoverLocked = false;
-                }
+            if (hoverTarget >= 0){
+                hoverLock = hoverTarget;
+            } else if (hoverLock >= 0){
+                hoverLock = -1;
             }
         }
     } else if (e.button === 2) {
         socket.emit('changeMode', 'none');
     }
+    
     e.preventDefault();
 }
 
@@ -142,7 +137,7 @@ const init = () => {
         roomNum = data.roomNum;
         console.log(data.Rooms);
         console.log(rooms);
-        setInterval(draw, HEIGHT - GROUND_LEVEL);
+        setInterval(draw, 16);
         syncName();
         console.log('synced');
     });
@@ -157,6 +152,7 @@ const init = () => {
     socket.on('reset', syncAll);
     socket.on('newMessage', newMessage);
     socket.on('denied', denied);
+    socket.on('syncRoom', syncAll);
 
     // in host.js
 

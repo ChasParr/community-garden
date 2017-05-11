@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var plantSpriteSizes = {
     WIDTH: 120,
@@ -8,6 +8,46 @@ var plantSpriteSizes = {
 var UISpriteSizes = {
     WIDTH: 200,
     HEIGHT: 200
+};
+
+var drawOverlay = function drawOverlay(drawCall, color) {
+    ctx.strokeStyle = color;
+
+    ctx.strokeRect(drawCall.x - drawCall.width / 2, drawCall.y - drawCall.height, drawCall.width, drawCall.height);
+
+    // water bar
+    ctx.fillStyle = 'rgb(255,255,255)';
+    ctx.fillRect(drawCall.x - 70 / 2, drawCall.y + 5, 70, 5);
+
+    ctx.strokeStyle = 'rgb(0,0,0)';
+    ctx.fillStyle = 'rgb(75,105,195)';
+    ctx.fillRect(drawCall.x - 70 / 2, drawCall.y + 5, drawCall.water * 70 / 100, 5);
+    ctx.strokeRect(drawCall.x - 70 / 2, drawCall.y + 5, 70, 5);
+    // growth bar
+    ctx.fillStyle = 'rgb(255,255,255)';
+    ctx.fillRect(drawCall.x - 70 / 2, drawCall.y + 15, 70, 5);
+    ctx.fillStyle = 'rgb(0,195,55)';
+    ctx.fillRect(drawCall.x - 70 / 2, drawCall.y + 15, drawCall.age * 70 / drawCall.maxAge, 5);
+    for (var i = 0; i < drawCall.stages - 1; i++) {
+        ctx.strokeRect(drawCall.x - 70 / 2 + 70 / (drawCall.stages - 1) * i, drawCall.y + 15, 70 / (drawCall.stages - 1), 5);
+    }
+
+    ctx.font = "12px Arial";
+    var name = drawCall.ownerName;
+    var length = ctx.measureText('Owned by:').width;
+    if (length < ctx.measureText(name).width) {
+        length = ctx.measureText(name).width;
+    }
+
+    ctx.fillStyle = 'rgb(255,255,255)';
+    ctx.globalAlpha = 0.8;
+    ctx.fillRect(drawCall.x - drawCall.width / 2, drawCall.y - drawCall.height - 35, length + 10, 33);
+
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgb(0,0,0)';
+
+    ctx.fillText('Owned by:', drawCall.x - drawCall.width / 2 + 5, drawCall.y - drawCall.height - 20);
+    ctx.fillText(name, drawCall.x - drawCall.width / 2 + 5, drawCall.y - drawCall.height - 7);
 };
 
 var draw = function draw() {
@@ -28,128 +68,93 @@ var draw = function draw() {
         }
 
         // draw rollover info
-        if (hoverTarget >= 0) {
-            var _drawCall = draws[hoverTarget];
-            ctx.strokeStyle = 'rgb(250,255,255)';
-            if (hoverLocked) {
-                ctx.strokeStyle = 'rgb(255,0,0)';
-            }
-            ctx.strokeRect(_drawCall.x - _drawCall.width / 2, _drawCall.y - _drawCall.height, _drawCall.width, _drawCall.height);
+        if (hoverLock >= 0) {
+            drawOverlay(draws[hoverLock], ctx.strokeStyle = 'rgb(255,0,0)');
+        }
 
-            // water bar
-            ctx.fillStyle = 'rgb(255,255,255)';
-            ctx.fillRect(_drawCall.x - 70 / 2, _drawCall.y + 5, 70, 5);
-
-            ctx.strokeStyle = 'rgb(0,0,0)';
-            ctx.fillStyle = 'rgb(75,105,195)';
-            ctx.fillRect(_drawCall.x - 70 / 2, _drawCall.y + 5, _drawCall.water * 70 / 100, 5);
-            ctx.strokeRect(_drawCall.x - 70 / 2, _drawCall.y + 5, 70, 5);
-            // growth bar
-            ctx.fillStyle = 'rgb(255,255,255)';
-            ctx.fillRect(_drawCall.x - 70 / 2, _drawCall.y + 15, 70, 5);
-            ctx.fillStyle = 'rgb(0,195,55)';
-            ctx.fillRect(_drawCall.x - 70 / 2, _drawCall.y + 15, _drawCall.age * 70 / _drawCall.maxAge, 5);
-            for (var _i = 0; _i < _drawCall.stages - 1; _i++) {
-                ctx.strokeRect(_drawCall.x - 70 / 2 + 70 / (_drawCall.stages - 1) * _i, _drawCall.y + 15, 70 / (_drawCall.stages - 1), 5);
-            }
-
-            ctx.font = "12px Arial";
-            var name = _drawCall.ownerName;
-            var length = ctx.measureText('Owned by:').width;
-            if (length < ctx.measureText(name).width) {
-                length = ctx.measureText(name).width;
-            }
-
-            ctx.fillStyle = 'rgb(255,255,255)';
-            ctx.globalAlpha = 0.8;
-            ctx.fillRect(_drawCall.x - _drawCall.width / 2, _drawCall.y - _drawCall.height - 35, length + 10, 33);
-
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = 'rgb(0,0,0)';
-
-            ctx.fillText('Owned by:', _drawCall.x - _drawCall.width / 2 + 5, _drawCall.y - _drawCall.height - 20);
-            ctx.fillText(name, _drawCall.x - _drawCall.width / 2 + 5, _drawCall.y - _drawCall.height - 7);
+        if (hoverTarget >= 0 && hoverTarget !== hoverLock) {
+            drawOverlay(draws[hoverTarget], 'rgb(250,255,255)');
         }
     }
 
     // draw players
-    for (var _i2 = 0; _i2 < rooms[roomNum].UserIds.length; _i2++) {
-        var _drawCall2 = users[rooms[roomNum].UserIds[_i2]];
-        if (_drawCall2.id !== id) {
+    for (var _i = 0; _i < rooms[roomNum].UserIds.length; _i++) {
+        var _drawCall = users[rooms[roomNum].UserIds[_i]];
+        if (_drawCall.id !== id) {
             ctx.globalAlpha = 0.7;
         }
-        if (_drawCall2.mode === 'water') {
+        if (_drawCall.mode === 'water') {
             // watering can
-            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * 0, UISpriteSizes.HEIGHT * 0, 160, 130, _drawCall2.x - 160 / 2, _drawCall2.y - 130 / 2, 160, 130);
-        } else if (_drawCall2.mode === 'watering') {
+            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * 0, UISpriteSizes.HEIGHT * 0, 160, 130, _drawCall.x - 160 / 2, _drawCall.y - 130 / 2, 160, 130);
+        } else if (_drawCall.mode === 'watering') {
             // watering can
-            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * 1, UISpriteSizes.HEIGHT * 0, 145, 140, _drawCall2.x - 145 / 2, _drawCall2.y - 140 / 2, 145, 140);
+            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * 1, UISpriteSizes.HEIGHT * 0, 145, 140, _drawCall.x - 145 / 2, _drawCall.y - 140 / 2, 145, 140);
 
-            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * 0, UISpriteSizes.HEIGHT * 1, 85, 185, _drawCall2.x - 145 / 2 - 85, _drawCall2.y + 140 / 2, 85, 185);
-        } else if (_drawCall2.mode == 'seed') {
-            ctx.drawImage(plantSpritesheet, 0, 0, 60, 40, _drawCall2.x - 60 / 2, _drawCall2.y - 40 / 2, 60, 40);
+            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * 0, UISpriteSizes.HEIGHT * 1, 85, 185, _drawCall.x - 145 / 2 - 85, _drawCall.y + 140 / 2, 85, 185);
+        } else if (_drawCall.mode == 'seed') {
+            ctx.drawImage(plantSpritesheet, 0, 0, 60, 40, _drawCall.x - 60 / 2, _drawCall.y - 40 / 2, 60, 40);
         }
 
         // draw nameplate
-        if (_drawCall2.id !== id && _drawCall2.mode !== 'none') {
+        if (_drawCall.id !== id && _drawCall.mode !== 'none') {
             ctx.font = "12px Arial";
-            var uName = _drawCall2.name;
-            var _length = ctx.measureText(uName).width;
+            var uName = _drawCall.name;
+            var length = ctx.measureText(uName).width;
             var yOffset = -15;
 
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.globalAlpha = 0.6;
-            ctx.fillRect(_drawCall2.x - _length / 2 - 5, _drawCall2.y - 20 + yOffset, _length + 10, 23);
+            ctx.fillRect(_drawCall.x - length / 2 - 5, _drawCall.y - 20 + yOffset, length + 10, 23);
             ctx.globalAlpha = 0.8;
             ctx.fillStyle = 'rgb(0,0,0)';
-            ctx.fillText(uName, _drawCall2.x - _length / 2, _drawCall2.y - 3 + yOffset);
+            ctx.fillText(uName, _drawCall.x - length / 2, _drawCall.y - 3 + yOffset);
         }
 
         ctx.globalAlpha = 1;
 
-        if (_drawCall2.id === id && (_drawCall2.mode === 'water' || _drawCall2.mode === 'watering')) {
+        if (_drawCall.id === id && (_drawCall.mode === 'water' || _drawCall.mode === 'watering')) {
             // water bar
             var offx = -20;
             var offy = 30;
             var width = 60;
             ctx.fillStyle = 'rgb(255,255,255)';
-            ctx.fillRect(_drawCall2.x + offx, _drawCall2.y + offy, width, 5);
+            ctx.fillRect(_drawCall.x + offx, _drawCall.y + offy, width, 5);
             ctx.strokeStyle = 'rgb(0,0,0)';
             ctx.fillStyle = 'rgb(75,105,195)';
-            ctx.fillRect(_drawCall2.x + offx, _drawCall2.y + offy, _drawCall2.water * width / 100, 5);
-            ctx.strokeRect(_drawCall2.x + offx, _drawCall2.y + offy, width, 5);
+            ctx.fillRect(_drawCall.x + offx, _drawCall.y + offy, _drawCall.water * width / 100, 5);
+            ctx.strokeRect(_drawCall.x + offx, _drawCall.y + offy, width, 5);
         }
     }
 
     // draw UI
 
-    for (var _i3 = 0; _i3 < ui.length; _i3++) {
-        var _drawCall3 = ui[_i3];
-        if (users[id].mode === _drawCall3.mode) {
+    for (var _i2 = 0; _i2 < ui.length; _i2++) {
+        var _drawCall2 = ui[_i2];
+        if (users[id].mode === _drawCall2.mode) {
             ctx.globalAlpha = 0.7;
         }
-        if (uiHover === _i3) {
+        if (uiHover === _i2) {
             ctx.fillStyle = 'rgb(250,255,255)';
             ctx.globalAlpha = 0.7;
-            ctx.fillRect(_drawCall3.x - _drawCall3.width * _drawCall3.scale / 2, _drawCall3.y - _drawCall3.height * _drawCall3.scale / 2, _drawCall3.width * _drawCall3.scale, _drawCall3.height * _drawCall3.scale);
+            ctx.fillRect(_drawCall2.x - _drawCall2.width * _drawCall2.scale / 2, _drawCall2.y - _drawCall2.height * _drawCall2.scale / 2, _drawCall2.width * _drawCall2.scale, _drawCall2.height * _drawCall2.scale);
             ctx.globalAlpha = 1;
         }
-        if (_drawCall3.spritesheet === 'ui') {
-            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * _drawCall3.col, UISpriteSizes.HEIGHT * _drawCall3.row, _drawCall3.width, _drawCall3.height, _drawCall3.x - _drawCall3.width * _drawCall3.scale / 2, _drawCall3.y - _drawCall3.height * _drawCall3.scale / 2, _drawCall3.width * _drawCall3.scale, _drawCall3.height * _drawCall3.scale);
-        } else if (_drawCall3.spritesheet === 'plant') {
-            ctx.drawImage(plantSpritesheet, plantSpriteSizes.WIDTH * _drawCall3.col, plantSpriteSizes.HEIGHT * _drawCall3.row, _drawCall3.width, _drawCall3.height, _drawCall3.x - _drawCall3.width * _drawCall3.scale / 2, _drawCall3.y - _drawCall3.height * _drawCall3.scale / 2, _drawCall3.width * _drawCall3.scale, _drawCall3.height * _drawCall3.scale);
+        if (_drawCall2.spritesheet === 'ui') {
+            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * _drawCall2.col, UISpriteSizes.HEIGHT * _drawCall2.row, _drawCall2.width, _drawCall2.height, _drawCall2.x - _drawCall2.width * _drawCall2.scale / 2, _drawCall2.y - _drawCall2.height * _drawCall2.scale / 2, _drawCall2.width * _drawCall2.scale, _drawCall2.height * _drawCall2.scale);
+        } else if (_drawCall2.spritesheet === 'plant') {
+            ctx.drawImage(plantSpritesheet, plantSpriteSizes.WIDTH * _drawCall2.col, plantSpriteSizes.HEIGHT * _drawCall2.row, _drawCall2.width, _drawCall2.height, _drawCall2.x - _drawCall2.width * _drawCall2.scale / 2, _drawCall2.y - _drawCall2.height * _drawCall2.scale / 2, _drawCall2.width * _drawCall2.scale, _drawCall2.height * _drawCall2.scale);
         }
-        if (_drawCall3.mode === 'water') {
+        if (_drawCall2.mode === 'water') {
             // water bar
-            var _offx = -20 * _drawCall3.scale;
-            var _offy = 30 * _drawCall3.scale;
-            var _width = 60 * _drawCall3.scale;
+            var _offx = -20 * _drawCall2.scale;
+            var _offy = 30 * _drawCall2.scale;
+            var _width = 60 * _drawCall2.scale;
             ctx.fillStyle = 'rgb(255,255,255)';
-            ctx.fillRect(_drawCall3.x + _offx, _drawCall3.y + _offy, _width, 5);
+            ctx.fillRect(_drawCall2.x + _offx, _drawCall2.y + _offy, _width, 5);
             ctx.strokeStyle = 'rgb(0,0,0)';
             ctx.fillStyle = 'rgb(75,105,195)';
-            ctx.fillRect(_drawCall3.x + _offx, _drawCall3.y + _offy, users[id].water * _width / 100, 5);
-            ctx.strokeRect(_drawCall3.x + _offx, _drawCall3.y + _offy, _width, 5);
+            ctx.fillRect(_drawCall2.x + _offx, _drawCall2.y + _offy, users[id].water * _width / 100, 5);
+            ctx.strokeRect(_drawCall2.x + _offx, _drawCall2.y + _offy, _width, 5);
         }
         ctx.globalAlpha = 1;
     }
@@ -170,7 +175,7 @@ var displayUsers = function displayUsers() {
         if (rooms[roomNum].host === rooms[roomNum].UserIds[i]) {
             user.innerHTML += " (host)";
         }
-        user.innerHTML += " (" + users[rooms[roomNum].UserIds[i]].mode + ")";
+        user.innerHTML += ' (' + users[rooms[roomNum].UserIds[i]].mode + ')';
         userList.appendChild(user);
     }
 };
@@ -200,7 +205,7 @@ var users = {};
 var rooms = [];
 var messages = [];
 var hoverTarget = -1;
-var hoverLocked = false;
+var hoverLock = -1;
 var uiHover = -1;
 
 // game constants
@@ -225,13 +230,11 @@ var handleMove = function handleMove(e) {
         }
     }
     // check for hover
-    if (!hoverLocked) {
-        hoverTarget = -1;
-        for (var _i = draws.length - 1; _i >= 0; _i--) {
-            if (Math.abs(newX - draws[_i].x) < draws[_i].width / 2 && draws[_i].y - newY < draws[_i].height && draws[_i].y - newY > 0) {
-                hoverTarget = _i;
-                break;
-            }
+    hoverTarget = -1;
+    for (var _i = draws.length - 1; _i >= 0; _i--) {
+        if (Math.abs(newX - draws[_i].x) < draws[_i].width / 2 && draws[_i].y - newY < draws[_i].height && draws[_i].y - newY > 0) {
+            hoverTarget = _i;
+            break;
         }
     }
 };
@@ -245,20 +248,16 @@ var handleClick = function handleClick(e) {
         } else if (users[id].mode === 'seed') {
             socket.emit('newPlant', { x: users[id].x, type: 'daisy' });
         } else {
-            if (hoverTarget >= 0 && !hoverLocked) {
-                hoverLocked = true;
-            } else if (hoverLocked) {
-                var x = e.clientX - canvas.offsetLeft;
-                var y = e.clientY - canvas.offsetTop;
-                var target = draws[hoverTarget];
-                if (Math.abs(x - target.x) < target.width / 2 && target.y - y < target.height && target.y - y > 0) {
-                    hoverLocked = false;
-                }
+            if (hoverTarget >= 0) {
+                hoverLock = hoverTarget;
+            } else if (hoverLock >= 0) {
+                hoverLock = -1;
             }
         }
     } else if (e.button === 2) {
         socket.emit('changeMode', 'none');
     }
+
     e.preventDefault();
 };
 
@@ -331,7 +330,7 @@ var init = function init() {
         roomNum = data.roomNum;
         console.log(data.Rooms);
         console.log(rooms);
-        setInterval(draw, HEIGHT - GROUND_LEVEL);
+        setInterval(draw, 16);
         syncName();
         console.log('synced');
     });
@@ -346,6 +345,7 @@ var init = function init() {
     socket.on('reset', syncAll);
     socket.on('newMessage', newMessage);
     socket.on('denied', denied);
+    socket.on('syncRoom', syncAll);
 
     // in host.js
 
@@ -420,12 +420,12 @@ var updateAllPlants = function updateAllPlants(data) {
 };
 
 var syncAll = function syncAll(data) {
-    console.log("sync all");
+    //console.log("sync all");
     draws = data.Plants;
     users = data.Users;
     //draw();
-    displayUsers();
-    console.log(data);
+    //displayUsers();
+    //console.log(data);
 };
 
 var syncName = function syncName() {

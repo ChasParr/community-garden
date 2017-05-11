@@ -8,6 +8,94 @@ const UISpriteSizes = {
     HEIGHT: 200
 }
 
+const drawOverlay = (drawCall, color) => {
+    ctx.strokeStyle = color;
+
+    ctx.strokeRect(
+        drawCall.x - drawCall.width / 2,
+        drawCall.y - drawCall.height,
+        drawCall.width,
+        drawCall.height
+    );
+
+    // water bar
+    ctx.fillStyle = 'rgb(255,255,255)';
+    ctx.fillRect(
+        drawCall.x - 70 / 2,
+        drawCall.y + 5,
+        70,
+        5
+    );
+
+    ctx.strokeStyle = 'rgb(0,0,0)';
+    ctx.fillStyle = 'rgb(75,105,195)';
+    ctx.fillRect(
+        drawCall.x - 70 / 2,
+        drawCall.y + 5,
+        drawCall.water * 70 / 100,
+        5
+    );
+    ctx.strokeRect(
+        drawCall.x - 70 / 2,
+        drawCall.y + 5,
+        70,
+        5
+    );
+    // growth bar
+    ctx.fillStyle = 'rgb(255,255,255)';
+    ctx.fillRect(
+        drawCall.x - 70 / 2,
+        drawCall.y + 15,
+        70,
+        5
+    );
+    ctx.fillStyle = 'rgb(0,195,55)';
+    ctx.fillRect(
+        drawCall.x - 70 / 2,
+        drawCall.y + 15,
+        drawCall.age * 70 / drawCall.maxAge,
+        5
+    );
+    for (let i = 0; i < drawCall.stages - 1; i++) {
+        ctx.strokeRect(
+            drawCall.x - 70 / 2 + 70 / (drawCall.stages - 1) * i,
+            drawCall.y + 15,
+            70 / (drawCall.stages - 1),
+            5
+        );
+    }
+
+    ctx.font = "12px Arial";
+    let name = drawCall.ownerName;
+    let length = ctx.measureText('Owned by:').width;
+    if (length < ctx.measureText(name).width) {
+        length = ctx.measureText(name).width;
+    }
+
+    ctx.fillStyle = 'rgb(255,255,255)';
+    ctx.globalAlpha = 0.8;
+    ctx.fillRect(
+        drawCall.x - drawCall.width / 2,
+        drawCall.y - drawCall.height - 35,
+        length + 10,
+        33
+    );
+
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgb(0,0,0)';
+
+    ctx.fillText(
+        'Owned by:',
+        drawCall.x - drawCall.width / 2 + 5,
+        drawCall.y - drawCall.height - 20
+    );
+    ctx.fillText(
+        name,
+        drawCall.x - drawCall.width / 2 + 5,
+        drawCall.y - drawCall.height - 7
+    );
+};
+
 const draw = () => {
     ctx.fillStyle = "rgb(200,200,250)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -36,104 +124,19 @@ const draw = () => {
         }
 
         // draw rollover info
-        if (hoverTarget >= 0) {
-            const drawCall = draws[hoverTarget];
-            ctx.strokeStyle = 'rgb(250,255,255)';
-            if (hoverLocked) {
-                ctx.strokeStyle = 'rgb(255,0,0)';
-            }
-            ctx.strokeRect(
-                drawCall.x - drawCall.width / 2,
-                drawCall.y - drawCall.height,
-                drawCall.width,
-                drawCall.height
-            );
-
-            // water bar
-            ctx.fillStyle = 'rgb(255,255,255)';
-            ctx.fillRect(
-                drawCall.x - 70 / 2,
-                drawCall.y + 5,
-                70,
-                5
-            );
-
-            ctx.strokeStyle = 'rgb(0,0,0)';
-            ctx.fillStyle = 'rgb(75,105,195)';
-            ctx.fillRect(
-                drawCall.x - 70 / 2,
-                drawCall.y + 5,
-                drawCall.water * 70 / 100,
-                5
-            );
-            ctx.strokeRect(
-                drawCall.x - 70 / 2,
-                drawCall.y + 5,
-                70,
-                5
-            );
-            // growth bar
-            ctx.fillStyle = 'rgb(255,255,255)';
-            ctx.fillRect(
-                drawCall.x - 70 / 2,
-                drawCall.y + 15,
-                70,
-                5
-            );
-            ctx.fillStyle = 'rgb(0,195,55)';
-            ctx.fillRect(
-                drawCall.x - 70 / 2,
-                drawCall.y + 15,
-                drawCall.age * 70 / drawCall.maxAge,
-                5
-            );
-            for (let i = 0; i < drawCall.stages - 1; i++) {
-                ctx.strokeRect(
-                    drawCall.x - 70 / 2 + 70 / (drawCall.stages - 1) * i,
-                    drawCall.y + 15,
-                    70 / (drawCall.stages - 1),
-                    5
-                );
-            }
-
-            ctx.font = "12px Arial";
-            let name = drawCall.ownerName;
-            let length = ctx.measureText('Owned by:').width;
-            if (length < ctx.measureText(name).width) {
-                length = ctx.measureText(name).width;
-            }
-
-            ctx.fillStyle = 'rgb(255,255,255)';
-            ctx.globalAlpha = 0.8;
-            ctx.fillRect(
-                drawCall.x - drawCall.width / 2,
-                drawCall.y - drawCall.height - 35,
-                length + 10,
-                33
-            );
-
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = 'rgb(0,0,0)';
-
-            ctx.fillText(
-                'Owned by:',
-                drawCall.x - drawCall.width / 2 + 5,
-                drawCall.y - drawCall.height - 20
-            );
-            ctx.fillText(
-                name,
-                drawCall.x - drawCall.width / 2 + 5,
-                drawCall.y - drawCall.height - 7
-            );
+        if (hoverLock >= 0) {
+            drawOverlay(draws[hoverLock], ctx.strokeStyle = 'rgb(255,0,0)');
         }
-
-
+        
+        if (hoverTarget >= 0 && hoverTarget !== hoverLock) {
+            drawOverlay(draws[hoverTarget], 'rgb(250,255,255)');
+        }
     }
 
     // draw players
     for (let i = 0; i < rooms[roomNum].UserIds.length; i++) {
         const drawCall = users[rooms[roomNum].UserIds[i]];
-        if (drawCall.id !== id){
+        if (drawCall.id !== id) {
             ctx.globalAlpha = 0.7;
         }
         if (drawCall.mode === 'water') {
@@ -162,7 +165,7 @@ const draw = () => {
                 145,
                 140
             );
-            
+
             ctx.drawImage(
                 UISpritesheet,
                 UISpriteSizes.WIDTH * 0,
@@ -187,9 +190,9 @@ const draw = () => {
                 40
             );
         }
-        
+
         // draw nameplate
-        if (drawCall.id !== id && drawCall.mode !== 'none'){
+        if (drawCall.id !== id && drawCall.mode !== 'none') {
             ctx.font = "12px Arial";
             let uName = drawCall.name;
             let length = ctx.measureText(uName).width;
@@ -211,10 +214,10 @@ const draw = () => {
                 drawCall.y - 3 + yOffset
             );
         }
-        
+
         ctx.globalAlpha = 1;
-        
-        if (drawCall.id === id && (drawCall.mode ==='water' || drawCall.mode === 'watering')){
+
+        if (drawCall.id === id && (drawCall.mode === 'water' || drawCall.mode === 'watering')) {
             // water bar
             const offx = -20;
             const offy = 30;
@@ -242,15 +245,15 @@ const draw = () => {
             );
         }
     }
-    
+
     // draw UI
-    
+
     for (let i = 0; i < ui.length; i++) {
         const drawCall = ui[i];
-        if (users[id].mode === drawCall.mode){
+        if (users[id].mode === drawCall.mode) {
             ctx.globalAlpha = 0.7;
         }
-        if (uiHover === i){
+        if (uiHover === i) {
             ctx.fillStyle = 'rgb(250,255,255)';
             ctx.globalAlpha = 0.7;
             ctx.fillRect(
@@ -261,7 +264,7 @@ const draw = () => {
             );
             ctx.globalAlpha = 1;
         }
-        if (drawCall.spritesheet === 'ui'){
+        if (drawCall.spritesheet === 'ui') {
             ctx.drawImage(
                 UISpritesheet,
                 UISpriteSizes.WIDTH * drawCall.col,
@@ -273,7 +276,7 @@ const draw = () => {
                 (drawCall.width * drawCall.scale),
                 (drawCall.height * drawCall.scale)
             );
-        } else if (drawCall.spritesheet === 'plant'){
+        } else if (drawCall.spritesheet === 'plant') {
             ctx.drawImage(
                 plantSpritesheet,
                 plantSpriteSizes.WIDTH * drawCall.col,
@@ -286,8 +289,8 @@ const draw = () => {
                 (drawCall.height * drawCall.scale)
             );
         }
-        if (drawCall.mode === 'water'){
-             // water bar
+        if (drawCall.mode === 'water') {
+            // water bar
             const offx = -20 * drawCall.scale;
             const offy = 30 * drawCall.scale;
             const width = 60 * drawCall.scale;
