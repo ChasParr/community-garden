@@ -3,37 +3,120 @@ let ctx;
 let socket;
 let id;
 let roomNum;
+let plantSpritesheet;
+let UISpritesheet;
 let draws = [];
+let ui = []
 let users = {};
 let rooms = [];
 let messages = [];
+let hoverTarget = -1;
+let hoverLocked = false;
+let uiHover = -1;
 
 // game constants
 const HEIGHT = 500;
 const WIDTH = 700;
-const BOT_MARGIN = 20;
+const GROUND_LEVEL = 80;
+
+const handleMove = (e) => {
+    let newX = e.clientX - canvas.offsetLeft;
+    let newY = e.clientY - canvas.offsetTop;
+    users[id].x = newX;
+    users[id].y = newY;
+
+    socket.emit('userMove', { x: newX, y: newY });
+    
+    // check for ui hover
+    uiHover = -1;
+    for (let i = ui.length - 1; i >= 0; i--){
+        if (Math.abs(newX - ui[i].x) < (ui[i].width * ui[i].scale) / 2 && Math.abs(newY - ui[i].y) < (ui[i].height * ui[i].scale) / 2){
+            uiHover = i;
+            break;
+        }
+    }
+    // check for hover
+    if (!hoverLocked){
+        hoverTarget = -1;
+        for (let i = draws.length - 1; i >= 0; i--){
+            if (Math.abs(newX - draws[i].x) < draws[i].width / 2 && draws[i].y - newY < draws[i].height && draws[i].y - newY > 0){
+                hoverTarget = i;
+                break;
+            }
+        }
+    }
+}
 
 const handleClick = (e) => {
-    if (users[id].mode === 'water'){
-        socket.emit('changeMode', 'watering');
-    } else if (users[id].mode === 'seed'){
-        let plant = {
-            x: users[id].x,
-            y: HEIGHT - BOT_MARGIN,
-            color: users[id].color,
-            user: id
+    if (e.button === 0){
+        if (uiHover >= 0){
+            socket.emit('changeMode', ui[uiHover].mode);
+        } else if (users[id].mode === 'water'){
+            socket.emit('changeMode', 'watering');
+        } else if (users[id].mode === 'seed'){
+            socket.emit('newPlant', {x: users[id].x, type: 'daisy'});
+        } else {
+            if (hoverTarget >= 0 && !hoverLocked){
+                hoverLocked = true;
+            } else if (hoverLocked){
+                let x = e.clientX - canvas.offsetLeft;
+                let y = e.clientY - canvas.offsetTop;
+                let target = draws[hoverTarget];
+                if (Math.abs(x - target.x) < target.width / 2 && target.y - y < target.height && target.y - y > 0){
+                    hoverLocked = false;
+                }
+            }
         }
-        socket.emit('newPlant', plant);
+    } else if (e.button === 2) {
+        socket.emit('changeMode', 'none');
     }
+    e.preventDefault();
 }
 
 const endClick = (e) => {
     if (users[id].mode == 'watering'){
         socket.emit('changeMode', 'water');
     }
+    e.preventDefault();
+}
+
+const handleLeave = (e) => {
+    socket.emit('changeMode', 'none');
+}
+
+const setupUI = () => {
+    // watering can
+    ui.push({
+        x: 80,
+        y: 60,
+        spritesheet: 'ui',
+        row: 0,
+        col: 0,
+        height: 130,
+        width: 160,
+        scale: 0.70,
+        mode: 'water'
+    });
+    // seed
+    ui.push({
+        x: 180,
+        y: 50,
+        spritesheet: 'plant',
+        row: 0,
+        col: 0,
+        height: 40,
+        width: 60,
+        scale: 1,
+        mode: 'seed'
+    });
+    console.log('ui set up');
 }
 
 const init = () => {
+    
+    plantSpritesheet = document.querySelector('#plantSpritesheet');
+    UISpritesheet = document.querySelector('#UISpritesheet');
+    
     canvas = document.querySelector("#canvas");
     ctx = canvas.getContext('2d');
 
@@ -55,11 +138,11 @@ const init = () => {
         id = data.id;
         draws = data.Plants;
         users = data.Users;
-        rooms = data.rooms;
+        rooms = data.Rooms;
         roomNum = data.roomNum;
-        console.log(data.rooms);
+        console.log(data.Rooms);
         console.log(rooms);
-        setInterval(draw, HEIGHT - BOT_MARGIN);
+        setInterval(draw, HEIGHT - GROUND_LEVEL);
         syncName();
         console.log('synced');
     });
@@ -69,7 +152,7 @@ const init = () => {
     socket.on('updateUsers', updateUsers);
     socket.on('moveUser', updateUserPosition);
     socket.on('removeUser', removeUser);
-    //socket.on('updatePlant', updatePlant);
+    socket.on('updatePlant', updatePlant);
     socket.on('updateAllPlants', updateAllPlants);
     socket.on('reset', syncAll);
     socket.on('newMessage', newMessage);
@@ -77,22 +160,6 @@ const init = () => {
 
     // in host.js
 
-
-    const body = document.querySelector("body");
-    body.addEventListener('mousemove', (e) => {
-        
-        let newX = e.clientX - canvas.offsetLeft;
-        let newY = e.clientY - canvas.offsetTop;
-        
-        /*
-        if (newX < 0) {
-            newX = 0;
-        } else if (newX > WIDTH) {
-            newX = WIDTH;
-        }
-        */
-        socket.emit('userMove', { x: newX, y: newY });
-    });
 
     const userForm = document.querySelector("#userSettings");
     const nameField = document.querySelector("#nameField");
@@ -112,24 +179,13 @@ const init = () => {
         messageField.value = "";
         e.preventDefault();
     });
-
-
-    const seedButton = document.querySelector("#seedButton");
-    const waterButton = document.querySelector("#waterButton");
-    seedButton.addEventListener('click', (e) => {
-        document.querySelector("#seedButton").disabled = true;
-        document.querySelector("#waterButton").disabled = false;
-        socket.emit('changeMode', 'seed');
-    });
     
-    waterButton.addEventListener('click', (e) => {
-        document.querySelector("#waterButton").disabled = true;
-        document.querySelector("#seedButton").disabled = false;
-        socket.emit('changeMode', 'water');
-    });
+    setupUI();
 
+    canvas.onmousemove = handleMove;
     canvas.onmousedown = handleClick;
     canvas.onmouseup = endClick;
+    canvas.onmouseleave = handleLeave;
 
 };
 

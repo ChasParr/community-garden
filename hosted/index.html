@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Falling Balls</title>
+    <title>Community Garden</title>
 
     <meta charset="utf-8" />
     <script src="/socket.io/socket.io.js"></script>
@@ -10,7 +10,7 @@
     <style>
         #canvas {
             display: inline-block;
-            padding: 20px 1px 1px 1px;
+            margin: 20px 1px 1px 20px;
         }
         
         #userBox {
@@ -31,12 +31,16 @@
             list-style-type: none;
             box-shadow: 0px 0px 1px grey;
         }
+        
+        .hidden {
+            display: none;
+        }
 
     </style>
 </head>
 
 <body>
-    <canvas id="canvas" height="500" width="700"></canvas>
+    <canvas id="canvas" height="500" width="700" oncontextmenu="return false;"></canvas>
     <div id="userBox">
         <h3>Users:</h3>
         <ul id="userList"></ul>
@@ -51,9 +55,8 @@
             <input type="submit" value="send" />
         </form>
     </div>
-	<input id="seedButton" type="button" value="seed" />
-	<input id="waterButton" type="button" value="water" />
-    
+    <img id="plantSpritesheet" class="hidden" src="/assets/plantSprites.png" alt="plant spritesheet" />
+    <img id="UISpritesheet" class="hidden" src="/assets/UISprites.png" alt="UI spritesheet" />
 </body>
 
 </html>

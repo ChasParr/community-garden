@@ -14,6 +14,7 @@ const updateUsers = (data) => {
 }
 
 const updateUserPosition = (data) => {
+    //console.log('getMove');
     users[data.id].x = data.newX;
     users[data.id].y = data.newY;
 }
@@ -23,12 +24,12 @@ const removeUser = (data) => {
     rooms[roomNum].UserIds.splice(rooms[roomNum].UserIds.indexOf(data.id), 1);
     displayUsers();
 }
-/*
+
 const updatePlant = (data) => {
-    users[data.user.id] = data.user;
-    console.log(data.user);
+    draws[data.index] = data.plant;
+    console.log(data.plant);
 }
-*/
+
 
 const updateAllPlants = (data) => {
     draws = data;
