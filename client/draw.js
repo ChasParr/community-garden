@@ -157,18 +157,21 @@ const draw = () => {
                 145,
                 140
             );
-
+            
+            // water
             ctx.drawImage(
                 UISpritesheet,
-                UISpriteSizes.WIDTH * 0,
+                UISpriteSizes.WIDTH * Math.floor(waterFrame / 3),
                 UISpriteSizes.HEIGHT * 1,
                 85,
                 185,
-                drawCall.x - 145 / 2 - 85,
-                drawCall.y + 140 / 2,
+                drawCall.x - 145 / 2 - 85 + 5,
+                drawCall.y + 140 / 2 - 5,
                 85,
                 185
             );
+            waterFrame++;
+            waterFrame %= 6;
         } else if (drawCall.mode == 'seed') {
             ctx.drawImage(
                 plantSpritesheet,
@@ -317,21 +320,19 @@ const draw = () => {
                 5
             );
         }
-        /*
-        if (drawCall.mode === 'store') {
             
-            ctx.font = "12px Arial";
-            let money = users[id].points / 100;
-            let length = ctx.measureText(money).width;
-            ctx.fillText(
-                money,
-                drawCall.x - length / 2,
-                drawCall.y
-            );
-        }
-        */
         ctx.globalAlpha = 1;
     }
+    
+    ctx.font = "24px Arial";
+    ctx.fillStyle = 'rgb(105,195,75)';
+    let money = (users[id].points / 100).toFixed(2);
+    let length = ctx.measureText(money).width;
+    ctx.fillText(
+        money,
+        WIDTH - 50 - length,
+        50
+    );
 
 };
 

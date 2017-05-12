@@ -172,7 +172,8 @@ const onJoin = (sock) => {
     if (Users[socket.uid] != null) {
       delete Names[Users[socket.uid].name];
       delete Users[socket.uid];
-    } Rooms[socket.rNum].UserIds.splice(Rooms[socket.rNum].UserIds.indexOf(socket.uid), 1);
+    } 
+    Rooms[socket.rNum].UserIds.splice(Rooms[socket.rNum].UserIds.indexOf(socket.uid), 1);
     if (Rooms[socket.rNum].UserIds.length > 0) {
       if (socket.uid === Rooms[socket.rNum].host) {
         io.sockets.in(socket.roomName).emit('hostLeft');
@@ -344,7 +345,7 @@ const setupSockets = (ioServer) => {
 
   setInterval(() => {
     updateWater();
-  }, 100);
+  }, 200);
 
   setInterval(() => {
     updateTick();

@@ -81,7 +81,10 @@ var draw = function draw() {
             // watering can
             ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * 1, UISpriteSizes.HEIGHT * 0, 145, 140, _drawCall.x - 145 / 2, _drawCall.y - 140 / 2, 145, 140);
 
-            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * 0, UISpriteSizes.HEIGHT * 1, 85, 185, _drawCall.x - 145 / 2 - 85, _drawCall.y + 140 / 2, 85, 185);
+            // water
+            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * Math.floor(waterFrame / 3), UISpriteSizes.HEIGHT * 1, 85, 185, _drawCall.x - 145 / 2 - 85 + 5, _drawCall.y + 140 / 2 - 5, 85, 185);
+            waterFrame++;
+            waterFrame %= 6;
         } else if (_drawCall.mode == 'seed') {
             ctx.drawImage(plantSpritesheet, 0, 0, 60, 40, _drawCall.x - 60 / 2, _drawCall.y - 40 / 2, 60, 40);
         }
@@ -90,15 +93,15 @@ var draw = function draw() {
         if (_drawCall.id !== id && _drawCall.mode !== 'none') {
             ctx.font = "12px Arial";
             var uName = _drawCall.name;
-            var length = ctx.measureText(uName).width;
+            var _length = ctx.measureText(uName).width;
             var yOffset = -15;
 
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.globalAlpha = 0.6;
-            ctx.fillRect(_drawCall.x - length / 2 - 5, _drawCall.y - 20 + yOffset, length + 10, 23);
+            ctx.fillRect(_drawCall.x - _length / 2 - 5, _drawCall.y - 20 + yOffset, _length + 10, 23);
             ctx.globalAlpha = 0.8;
             ctx.fillStyle = 'rgb(0,0,0)';
-            ctx.fillText(uName, _drawCall.x - length / 2, _drawCall.y - 3 + yOffset);
+            ctx.fillText(uName, _drawCall.x - _length / 2, _drawCall.y - 3 + yOffset);
         }
 
         ctx.globalAlpha = 1;
@@ -156,21 +159,15 @@ var draw = function draw() {
             ctx.fillRect(_drawCall2.x + _offx, _drawCall2.y + _offy, users[id].water * _width / 100, 5);
             ctx.strokeRect(_drawCall2.x + _offx, _drawCall2.y + _offy, _width, 5);
         }
-        /*
-        if (drawCall.mode === 'store') {
-            
-            ctx.font = "12px Arial";
-            let money = users[id].points / 100;
-            let length = ctx.measureText(money).width;
-            ctx.fillText(
-                money,
-                drawCall.x - length / 2,
-                drawCall.y
-            );
-        }
-        */
+
         ctx.globalAlpha = 1;
     }
+
+    ctx.font = "24px Arial";
+    ctx.fillStyle = 'rgb(105,195,75)';
+    var money = (users[id].points / 100).toFixed(2);
+    var length = ctx.measureText(money).width;
+    ctx.fillText(money, WIDTH - 50 - length, 50);
 };
 
 var displayUsers = function displayUsers() {
@@ -221,6 +218,7 @@ var hoverTarget = -1;
 var hoverLock = -1;
 var uiHover = -1;
 var lastUpdate = void 0;
+var waterFrame = 0;
 
 // game constants
 var HEIGHT = 500;
@@ -316,10 +314,27 @@ var setupUI = function setupUI() {
     ui.push({
         x: WIDTH - 80,
         y: 50,
-        spritesheet
-        
+        spritesheet: 'ui,
+        row: 2,
+        col: 1,
+        height: 80,
+        width: 50,
+        scale: 1,
+        mode: 'store'
     })
     */
+    // help
+    ui.push({
+        x: WIDTH - 50,
+        y: HEIGHT - 50,
+        spritesheet: 'ui',
+        row: 2,
+        col: 0,
+        height: 80,
+        width: 50,
+        scale: .9,
+        mode: 'help'
+    });
     console.log('ui set up');
 };
 

@@ -14,6 +14,7 @@ let hoverTarget = -1;
 let hoverLock = -1;
 let uiHover = -1;
 let lastUpdate;
+let waterFrame = 0;
 
 // game constants
 const HEIGHT = 500;
@@ -110,10 +111,27 @@ const setupUI = () => {
     ui.push({
         x: WIDTH - 80,
         y: 50,
-        spritesheet
-        
+        spritesheet: 'ui,
+        row: 2,
+        col: 1,
+        height: 80,
+        width: 50,
+        scale: 1,
+        mode: 'store'
     })
     */
+    // help
+    ui.push({
+        x: WIDTH - 50,
+        y: HEIGHT - 50,
+        spritesheet: 'ui',
+        row: 2,
+        col: 0,
+        height: 80,
+        width: 50,
+        scale: .9,
+        mode: 'help'
+    });
     console.log('ui set up');
 }
 
