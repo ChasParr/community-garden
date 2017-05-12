@@ -70,7 +70,7 @@ const handleClick = (e) => {
 }
 
 const endClick = (e) => {
-    if (users[id].mode == 'watering'){
+    if (users[id].mode === 'watering'){
         socket.emit('changeMode', 'water');
     }
     e.preventDefault();
@@ -105,6 +105,15 @@ const setupUI = () => {
         scale: 1,
         mode: 'seed'
     });
+    // store
+    /*
+    ui.push({
+        x: WIDTH - 80,
+        y: 50,
+        spritesheet
+        
+    })
+    */
     console.log('ui set up');
 }
 

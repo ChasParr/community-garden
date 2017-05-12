@@ -42,7 +42,11 @@ const syncAll = (data) => {
     if (data.Time >  lastUpdate){
         lastUpdate = data.Time;
         draws = data.Plants;
+        let newerX = users[id].x;
+        let newerY = users[id].y;
         users = data.Users;
+        users[id].x = newerX;
+        users[id].y = newerY;
         //draw();
         displayUsers();
     }

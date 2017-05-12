@@ -156,6 +156,19 @@ var draw = function draw() {
             ctx.fillRect(_drawCall2.x + _offx, _drawCall2.y + _offy, users[id].water * _width / 100, 5);
             ctx.strokeRect(_drawCall2.x + _offx, _drawCall2.y + _offy, _width, 5);
         }
+        /*
+        if (drawCall.mode === 'store') {
+            
+            ctx.font = "12px Arial";
+            let money = users[id].points / 100;
+            let length = ctx.measureText(money).width;
+            ctx.fillText(
+                money,
+                drawCall.x - length / 2,
+                drawCall.y
+            );
+        }
+        */
         ctx.globalAlpha = 1;
     }
 };
@@ -263,7 +276,7 @@ var handleClick = function handleClick(e) {
 };
 
 var endClick = function endClick(e) {
-    if (users[id].mode == 'watering') {
+    if (users[id].mode === 'watering') {
         socket.emit('changeMode', 'water');
     }
     e.preventDefault();
@@ -298,6 +311,15 @@ var setupUI = function setupUI() {
         scale: 1,
         mode: 'seed'
     });
+    // store
+    /*
+    ui.push({
+        x: WIDTH - 80,
+        y: 50,
+        spritesheet
+        
+    })
+    */
     console.log('ui set up');
 };
 
@@ -423,7 +445,11 @@ var syncAll = function syncAll(data) {
     if (data.Time > lastUpdate) {
         lastUpdate = data.Time;
         draws = data.Plants;
+        var newerX = users[id].x;
+        var newerY = users[id].y;
         users = data.Users;
+        users[id].x = newerX;
+        users[id].y = newerY;
         //draw();
         displayUsers();
     }

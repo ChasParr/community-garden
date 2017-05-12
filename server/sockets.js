@@ -137,7 +137,8 @@ const onJoin = (sock) => {
       points: 0,
       water: 100,
       mode: 'none',
-      //lastUpdate: new Date().getTime()
+      seeds: 5,
+      // lastUpdate: new Date().getTime()
     };
 
         // add name to indicate it is taken
@@ -315,7 +316,7 @@ const updatePlantGrowth = () => {
   for (let i = 0; i < Rooms.length; i++) {
     Rooms[i].Func.updatePlants();
   }
-  //console.log('plants updated');
+  // console.log('plants updated');
 };
 
 const updateWater = () => {

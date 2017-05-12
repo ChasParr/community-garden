@@ -317,6 +317,19 @@ const draw = () => {
                 5
             );
         }
+        /*
+        if (drawCall.mode === 'store') {
+            
+            ctx.font = "12px Arial";
+            let money = users[id].points / 100;
+            let length = ctx.measureText(money).width;
+            ctx.fillText(
+                money,
+                drawCall.x - length / 2,
+                drawCall.y
+            );
+        }
+        */
         ctx.globalAlpha = 1;
     }
 
