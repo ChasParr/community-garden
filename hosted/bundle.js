@@ -327,7 +327,7 @@ var handleMove = function handleMove(e) {
     storeHover = -1;
     if (users[id].mode === 'store') {
         for (var i = store.length - 1; i >= 0; i--) {
-            if (Math.abs(newX - store[i].x) < store[i].width * store[i].scale && Math.abs(newY - store[i].y) < store[i].height * store[i].scale / 2) {
+            if (Math.abs(newX - store[i].x) < store[i].width * store[i].scale / 2 && Math.abs(newY - store[i].y) < store[i].height * store[i].scale / 2) {
                 storeHover = i;
                 break;
             }
