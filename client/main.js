@@ -17,6 +17,7 @@ let uiHover = -1;
 let storeHover = -1;
 let lastUpdate;
 let waterFrame = 0;
+let followScroll = true;
 
 // game constants
 const HEIGHT = 500;
@@ -280,6 +281,16 @@ const init = () => {
         });
         messageField.value = "";
         e.preventDefault();
+    });
+    
+    const messages = document.querySelector("#chatBox");
+    messages.addEventListener('scroll', (e) => {
+        if (messages.scrollTop < messages.scrollHeight - messages.clientHeight){
+            followScroll = false;
+        } else {
+            followScroll = true;
+        }
+            console.log(followScroll);
     });
     
     document.querySelector("#karmaButton5").addEventListener('click', function (e) {

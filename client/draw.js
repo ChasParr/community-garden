@@ -172,7 +172,7 @@ const draw = () => {
             );
             waterFrame++;
             waterFrame %= 6;
-        } else if (drawCall.mode == 'seed') {
+        } else if (drawCall.mode === 'seed') {
             ctx.drawImage(
                 plantSpritesheet,
                 0,
@@ -187,7 +187,10 @@ const draw = () => {
         }
 
         // draw nameplate
-        if (drawCall.id !== id && drawCall.mode !== 'none') {
+        if (drawCall.id !== id && 
+            drawCall.mode !== 'none' &&
+            drawCall.mode !== 'help' &&
+            drawCall.mode !== 'store') {
             ctx.font = "12px Arial";
             let uName = drawCall.name;
             let length = ctx.measureText(uName).width;
@@ -494,5 +497,8 @@ const displayMessages = () => {
         message.style.color = messages[i].color;
         message.innerHTML += messages[i].message;
         chatBox.appendChild(message);
+    }
+    if (followScroll){
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
 };

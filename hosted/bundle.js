@@ -85,12 +85,12 @@ var draw = function draw() {
             ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * Math.floor(waterFrame / 3), UISpriteSizes.HEIGHT * 1, 85, 185, _drawCall.x - 145 / 2 - 85 + 5, _drawCall.y + 140 / 2 - 5, 85, 185);
             waterFrame++;
             waterFrame %= 6;
-        } else if (_drawCall.mode == 'seed') {
+        } else if (_drawCall.mode === 'seed') {
             ctx.drawImage(plantSpritesheet, 0, 0, 60, 40, _drawCall.x - 60 / 2, _drawCall.y - 40 / 2, 60, 40);
         }
 
         // draw nameplate
-        if (_drawCall.id !== id && _drawCall.mode !== 'none') {
+        if (_drawCall.id !== id && _drawCall.mode !== 'none' && _drawCall.mode !== 'help' && _drawCall.mode !== 'store') {
             ctx.font = "12px Arial";
             var uName = _drawCall.name;
             var length = ctx.measureText(uName).width;
@@ -287,6 +287,9 @@ var displayMessages = function displayMessages() {
         message.innerHTML += messages[i].message;
         chatBox.appendChild(message);
     }
+    if (followScroll) {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
 };
 'use strict';
 
@@ -309,6 +312,7 @@ var uiHover = -1;
 var storeHover = -1;
 var lastUpdate = void 0;
 var waterFrame = 0;
+var followScroll = true;
 
 // game constants
 var HEIGHT = 500;
@@ -567,6 +571,16 @@ var init = function init() {
         });
         messageField.value = "";
         e.preventDefault();
+    });
+
+    var messages = document.querySelector("#chatBox");
+    messages.addEventListener('scroll', function (e) {
+        if (messages.scrollTop < messages.scrollHeight - messages.clientHeight) {
+            followScroll = false;
+        } else {
+            followScroll = true;
+        }
+        console.log(followScroll);
     });
 
     document.querySelector("#karmaButton5").addEventListener('click', function (e) {
