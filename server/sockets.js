@@ -18,7 +18,7 @@ const PLANTS = {
     STAGES: 4,
     MAX_AGE: 100,
     AGE_INCR: 33, // = MAX_AGE / STAGES - 1
-    HEIGHT: [40, 85, 170, 205],
+    HEIGHT: [30, 85, 170, 205],
     WIDTH: [60, 80, 80, 80],
   },
 };
@@ -34,7 +34,7 @@ const checkWaterColl = (x1, x2) => (x1 - x2 <= WATER_SPREAD + WATER_OFFSET &&
 // create a new room
 const createNewRoom = () => {
   const newRoom = {
-    roomName: `room${Rooms.length}`,
+    roomName: `room ${Rooms.length}`,
     host: 0,
     Plants: [],
     UserIds: [],
@@ -172,7 +172,7 @@ const onJoin = (sock) => {
     if (Users[socket.uid] != null) {
       delete Names[Users[socket.uid].name];
       delete Users[socket.uid];
-    } 
+    }
     Rooms[socket.rNum].UserIds.splice(Rooms[socket.rNum].UserIds.indexOf(socket.uid), 1);
     if (Rooms[socket.rNum].UserIds.length > 0) {
       if (socket.uid === Rooms[socket.rNum].host) {
@@ -303,6 +303,10 @@ const onJoin = (sock) => {
       });
       */
     }
+  });
+
+  socket.on('buyKarma', (data) => {
+    Users[socket.uid].points += data;
   });
 };
 

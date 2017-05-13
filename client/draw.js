@@ -67,7 +67,7 @@ const drawOverlay = (drawCall, color) => {
 
     ctx.font = "12px Arial";
     let name = drawCall.ownerName;
-    let length = ctx.measureText('Owned by:').width;
+    let length = ctx.measureText('Planted by:').width;
     if (length < ctx.measureText(name).width) {
         length = ctx.measureText(name).width;
     }
@@ -85,7 +85,7 @@ const drawOverlay = (drawCall, color) => {
     ctx.fillStyle = 'rgb(0,0,0)';
 
     ctx.fillText(
-        'Owned by:',
+        'Planted by:',
         drawCall.x - drawCall.width / 2 + 5,
         drawCall.y - drawCall.height - 20
     );
@@ -250,23 +250,85 @@ const draw = () => {
         drawOverlay(draws[hoverTarget], 'rgb(250,255,255)');
     }
 
+    // draw help screen
+    if (users[id].mode === 'help'){
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = 'rgb(255,255,255)';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.globalAlpha = 1;
+        ctx.font = "24px Arial";
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.fillText('Controls:', 20, 300);
+        ctx.font = "18px Arial";
+        ctx.fillText('R Click: Select/Use Tool', 25, 330);
+        ctx.fillText('L Click: Drop Tool', 25, 350);
+        ctx.fillText('Move offscreen: Drop Tool', 25, 370);
+        ctx.fillText('hover over a plant to show info,', 25, 410);
+        ctx.fillText('click to keep info up', 25, 430);
+        let length = ctx.measureText('hover over an element for information').width;
+        ctx.fillText('hover over an element for information', (WIDTH - length) / 2, HEIGHT - 20);
+        // water bar
+        ctx.strokeStyle = 'rgb(0,0,0)';
+        ctx.fillStyle = 'rgb(255,255,255)';
+        ctx.fillRect(25, 440, 70, 5);
+        ctx.fillStyle = 'rgb(75,105,195)';
+        ctx.fillRect(25, 440, 25, 5);
+        ctx.strokeRect(25, 440, 70, 5);
+        // growth bar
+        ctx.fillStyle = 'rgb(255,255,255)';
+        ctx.fillRect(25, 450, 70, 5);
+        ctx.fillStyle = 'rgb(0,195,55)';
+        ctx.fillRect(25, 450, 30, 5);
+        for (let i = 0; i < 3; i++) {
+            ctx.strokeRect(25 + 70 / 3 * i, 450, 70 / 3, 5);
+        }
+        ctx.font = "12px Arial";
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.fillText('water', 100, 445);
+        ctx.fillText('growth', 100, 457);
+    }
+    
     // draw UI
 
+    let money = (users[id].points / 100).toFixed(2);
+    
     for (let i = 0; i < ui.length; i++) {
         const drawCall = ui[i];
         if (users[id].mode === drawCall.mode) {
             ctx.globalAlpha = 0.7;
         }
+        let storeOffset = 0;
+        if (drawCall.mode === 'store'){
+            ctx.font = "24px Arial";
+            storeOffset = ctx.measureText(money).width;
+            if (storeOffset < ctx.measureText('000.00').width){
+                storeOffset = ctx.measureText('000.00').width;
+            }
+        }
+        let scaledWidth = drawCall.width * drawCall.scale;
+        let scaledHeight = drawCall.height * drawCall.scale;
         if (uiHover === i) {
             ctx.fillStyle = 'rgb(250,255,255)';
             ctx.globalAlpha = 0.7;
             ctx.fillRect(
-                drawCall.x - (drawCall.width * drawCall.scale) / 2,
-                drawCall.y - (drawCall.height * drawCall.scale) / 2,
-                (drawCall.width * drawCall.scale),
-                (drawCall.height * drawCall.scale)
+                drawCall.x - scaledWidth / 2 - storeOffset,
+                drawCall.y - scaledHeight / 2,
+                scaledWidth + storeOffset + 5,
+                scaledHeight
             );
             ctx.globalAlpha = 1;
+            if (users[id].mode === 'help'){
+                ctx.font = "12px Arial";
+                ctx.fillStyle = 'rgb(0,0,0)';
+                let arr = drawCall.help.split(',');
+                for (let j = 0; j < arr.length; j++){
+                    ctx.fillText(
+                        arr[j], 
+                        drawCall.x - scaledWidth / 2 - storeOffset,
+                        drawCall.y + scaledHeight / 2 + 10 * (j + 1)
+                    );
+                }
+            }
         }
         if (drawCall.spritesheet === 'ui') {
             ctx.drawImage(
@@ -275,10 +337,10 @@ const draw = () => {
                 UISpriteSizes.HEIGHT * drawCall.row,
                 drawCall.width,
                 drawCall.height,
-                drawCall.x - (drawCall.width * drawCall.scale) / 2,
-                drawCall.y - (drawCall.height * drawCall.scale) / 2,
-                (drawCall.width * drawCall.scale),
-                (drawCall.height * drawCall.scale)
+                drawCall.x - scaledWidth / 2 - storeOffset,
+                drawCall.y - scaledHeight / 2,
+                scaledWidth,
+                scaledHeight
             );
         } else if (drawCall.spritesheet === 'plant') {
             ctx.drawImage(
@@ -287,10 +349,10 @@ const draw = () => {
                 plantSpriteSizes.HEIGHT * drawCall.row,
                 drawCall.width,
                 drawCall.height,
-                drawCall.x - (drawCall.width * drawCall.scale) / 2,
-                drawCall.y - (drawCall.height * drawCall.scale) / 2,
-                (drawCall.width * drawCall.scale),
-                (drawCall.height * drawCall.scale)
+                drawCall.x - scaledWidth / 2,
+                drawCall.y - scaledHeight / 2,
+                scaledWidth,
+                scaledHeight
             );
         }
         if (drawCall.mode === 'water') {
@@ -320,19 +382,32 @@ const draw = () => {
                 5
             );
         }
+        if (drawCall.mode === 'store'){
+            // draw karma
+            ctx.font = "24px Arial";
+        ctx.fillStyle = 'rgb(0,80,0)';
+            ctx.fillText(
+                money,
+                drawCall.x + scaledWidth / 2 - storeOffset + 5,
+                drawCall.y + 10
+            );
+        }
             
         ctx.globalAlpha = 1;
     }
     
-    ctx.font = "24px Arial";
-    ctx.fillStyle = 'rgb(105,195,75)';
-    let money = (users[id].points / 100).toFixed(2);
-    let length = ctx.measureText(money).width;
-    ctx.fillText(
-        money,
-        WIDTH - 50 - length,
-        50
-    );
+    // draw help screen
+    if (users[id].mode === 'help'){
+        ctx.fillstyle = 'rgb(255,255,255)';
+    }
+    
+    // draw store
+    if (users[id].mode === 'store'){
+        
+        for (let i = 0; i < store.length; i++) {
+            
+        }
+    }
 
 };
 
@@ -351,7 +426,9 @@ const displayUsers = () => {
         if (rooms[roomNum].host === rooms[roomNum].UserIds[i]) {
             user.innerHTML += (" (host)");
         }
-        user.innerHTML += (` (${users[rooms[roomNum].UserIds[i]].mode})`);
+        if (users[rooms[roomNum].UserIds[i]].mode !== "none"){
+            user.innerHTML += (` (${users[rooms[roomNum].UserIds[i]].mode})`);
+        }
         userList.appendChild(user);
     }
 };

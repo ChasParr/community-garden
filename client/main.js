@@ -32,7 +32,18 @@ const handleMove = (e) => {
     // check for ui hover
     uiHover = -1;
     for (let i = ui.length - 1; i >= 0; i--){
-        if (Math.abs(newX - ui[i].x) < (ui[i].width * ui[i].scale) / 2 && Math.abs(newY - ui[i].y) < (ui[i].height * ui[i].scale) / 2){
+        let storeOffset = 0;
+        if (ui[i].mode === 'store'){
+            ctx.font = "24px Arial";
+            let money = (users[id].points / 100).toFixed(2);
+            storeOffset = ctx.measureText(money).width;
+            if (storeOffset < ctx.measureText('000.00').width){
+                storeOffset = ctx.measureText('000.00').width;
+            }
+        }
+        if (Math.abs(newX - (ui[i].x - storeOffset / 2)) < 
+            (ui[i].width * ui[i].scale) / 2 + storeOffset / 2 + 5 && 
+            Math.abs(newY - ui[i].y) < (ui[i].height * ui[i].scale) / 2){
             uiHover = i;
             break;
         }
@@ -51,13 +62,17 @@ const handleMove = (e) => {
 const handleClick = (e) => {
     if (e.button === 0){
         if (uiHover >= 0){
-            socket.emit('changeMode', ui[uiHover].mode);
+            if (ui[uiHover].mode !== users[id].mode){
+                socket.emit('changeMode', ui[uiHover].mode);
+            } else {
+                socket.emit('changeMode', 'none');  
+            }
         } else if (users[id].mode === 'water'){
             socket.emit('changeMode', 'watering');
         } else if (users[id].mode === 'seed'){
             socket.emit('newPlant', {x: users[id].x, type: 'daisy'});
         } else {
-            if (hoverTarget >= 0){
+            if (hoverTarget >= 0 && hoverTarget !== hoverLock){
                 hoverLock = hoverTarget;
             } else if (hoverLock >= 0){
                 hoverLock = -1;
@@ -92,7 +107,8 @@ const setupUI = () => {
         height: 130,
         width: 160,
         scale: 0.70,
-        mode: 'water'
+        mode: 'water',
+        help: 'Watering Can:,-refills over time'
     });
     // seed
     ui.push({
@@ -104,22 +120,22 @@ const setupUI = () => {
         height: 40,
         width: 60,
         scale: 1,
-        mode: 'seed'
+        mode: 'seed',
+        help: 'Daisy Seed:,-requires water to grow'
     });
     // store
-    /*
     ui.push({
-        x: WIDTH - 80,
-        y: 50,
-        spritesheet: 'ui,
+        x: WIDTH - 60,
+        y: 40,
+        spritesheet: 'ui',
         row: 2,
         col: 1,
-        height: 80,
-        width: 50,
-        scale: 1,
-        mode: 'store'
+        height: 55,
+        width: 55,
+        scale: .6,
+        mode: 'store',
+        help: 'Store:,-spend Karma here'
     })
-    */
     // help
     ui.push({
         x: WIDTH - 50,
@@ -130,9 +146,55 @@ const setupUI = () => {
         height: 80,
         width: 50,
         scale: .9,
-        mode: 'help'
+        mode: 'help',
+        help: 'Help Button'
     });
     console.log('ui set up');
+}
+
+const setupStore = () => {
+    // water refill
+    ui.push({
+        x: WIDTH - 60,
+        y: 60,
+        spritesheet: 'ui',
+        row: 0,
+        col: 0,
+        height: 130,
+        width: 160,
+        scale: 0.70,
+        item: 'water refill',
+        price: 200,
+        description: 'refills watering can'
+    });
+    // daisy seed
+    ui.push({
+        x: WIDTH - 60,
+        y: 50,
+        spritesheet: 'plant',
+        row: 0,
+        col: 0,
+        height: 40,
+        width: 60,
+        scale: 1,
+        item: 'daisy',
+        price: 100,
+        help: 'Daisy Seed, requires water to grow'
+    });
+    // store
+    ui.push({
+        x: WIDTH - 60,
+        y: 40,
+        spritesheet: 'ui',
+        row: 2,
+        col: 1,
+        height: 55,
+        width: 55,
+        scale: .6,
+        mode: 'store',
+        help: 'Store, spend Karma here'
+    })
+    console.log('store set up');
 }
 
 const init = () => {
@@ -201,6 +263,16 @@ const init = () => {
         });
         messageField.value = "";
         e.preventDefault();
+    });
+    
+    document.querySelector("#karmaButton5").addEventListener('click', function (e) {
+        socket.emit('buyKarma', 500);
+    });
+    document.querySelector("#karmaButton10").addEventListener('click', function (e) {
+        socket.emit('buyKarma', 1000);
+    });
+    document.querySelector("#karmaButton50").addEventListener('click', function (e) {
+        socket.emit('buyKarma', 5000);
     });
     
     setupUI();

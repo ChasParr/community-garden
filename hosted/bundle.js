@@ -34,7 +34,7 @@ var drawOverlay = function drawOverlay(drawCall, color) {
 
     ctx.font = "12px Arial";
     var name = drawCall.ownerName;
-    var length = ctx.measureText('Owned by:').width;
+    var length = ctx.measureText('Planted by:').width;
     if (length < ctx.measureText(name).width) {
         length = ctx.measureText(name).width;
     }
@@ -46,7 +46,7 @@ var drawOverlay = function drawOverlay(drawCall, color) {
     ctx.globalAlpha = 1;
     ctx.fillStyle = 'rgb(0,0,0)';
 
-    ctx.fillText('Owned by:', drawCall.x - drawCall.width / 2 + 5, drawCall.y - drawCall.height - 20);
+    ctx.fillText('Planted by:', drawCall.x - drawCall.width / 2 + 5, drawCall.y - drawCall.height - 20);
     ctx.fillText(name, drawCall.x - drawCall.width / 2 + 5, drawCall.y - drawCall.height - 7);
 };
 
@@ -93,15 +93,15 @@ var draw = function draw() {
         if (_drawCall.id !== id && _drawCall.mode !== 'none') {
             ctx.font = "12px Arial";
             var uName = _drawCall.name;
-            var _length = ctx.measureText(uName).width;
+            var length = ctx.measureText(uName).width;
             var yOffset = -15;
 
             ctx.fillStyle = 'rgb(255,255,255)';
             ctx.globalAlpha = 0.6;
-            ctx.fillRect(_drawCall.x - _length / 2 - 5, _drawCall.y - 20 + yOffset, _length + 10, 23);
+            ctx.fillRect(_drawCall.x - length / 2 - 5, _drawCall.y - 20 + yOffset, length + 10, 23);
             ctx.globalAlpha = 0.8;
             ctx.fillStyle = 'rgb(0,0,0)';
-            ctx.fillText(uName, _drawCall.x - _length / 2, _drawCall.y - 3 + yOffset);
+            ctx.fillText(uName, _drawCall.x - length / 2, _drawCall.y - 3 + yOffset);
         }
 
         ctx.globalAlpha = 1;
@@ -129,23 +129,81 @@ var draw = function draw() {
         drawOverlay(draws[hoverTarget], 'rgb(250,255,255)');
     }
 
+    // draw help screen
+    if (users[id].mode === 'help') {
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = 'rgb(255,255,255)';
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.globalAlpha = 1;
+        ctx.font = "24px Arial";
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.fillText('Controls:', 20, 300);
+        ctx.font = "18px Arial";
+        ctx.fillText('R Click: Select/Use Tool', 25, 330);
+        ctx.fillText('L Click: Drop Tool', 25, 350);
+        ctx.fillText('Move offscreen: Drop Tool', 25, 370);
+        ctx.fillText('hover over a plant to show info,', 25, 410);
+        ctx.fillText('click to keep info up', 25, 430);
+        var _length = ctx.measureText('hover over an element for information').width;
+        ctx.fillText('hover over an element for information', (WIDTH - _length) / 2, HEIGHT - 20);
+        // water bar
+        ctx.strokeStyle = 'rgb(0,0,0)';
+        ctx.fillStyle = 'rgb(255,255,255)';
+        ctx.fillRect(25, 440, 70, 5);
+        ctx.fillStyle = 'rgb(75,105,195)';
+        ctx.fillRect(25, 440, 25, 5);
+        ctx.strokeRect(25, 440, 70, 5);
+        // growth bar
+        ctx.fillStyle = 'rgb(255,255,255)';
+        ctx.fillRect(25, 450, 70, 5);
+        ctx.fillStyle = 'rgb(0,195,55)';
+        ctx.fillRect(25, 450, 30, 5);
+        for (var _i2 = 0; _i2 < 3; _i2++) {
+            ctx.strokeRect(25 + 70 / 3 * _i2, 450, 70 / 3, 5);
+        }
+        ctx.font = "12px Arial";
+        ctx.fillStyle = 'rgb(0,0,0)';
+        ctx.fillText('water', 100, 445);
+        ctx.fillText('growth', 100, 457);
+    }
+
     // draw UI
 
-    for (var _i2 = 0; _i2 < ui.length; _i2++) {
-        var _drawCall2 = ui[_i2];
+    var money = (users[id].points / 100).toFixed(2);
+
+    for (var _i3 = 0; _i3 < ui.length; _i3++) {
+        var _drawCall2 = ui[_i3];
         if (users[id].mode === _drawCall2.mode) {
             ctx.globalAlpha = 0.7;
         }
-        if (uiHover === _i2) {
+        var storeOffset = 0;
+        if (_drawCall2.mode === 'store') {
+            ctx.font = "24px Arial";
+            storeOffset = ctx.measureText(money).width;
+            if (storeOffset < ctx.measureText('000.00').width) {
+                storeOffset = ctx.measureText('000.00').width;
+            }
+        }
+        var scaledWidth = _drawCall2.width * _drawCall2.scale;
+        var scaledHeight = _drawCall2.height * _drawCall2.scale;
+        if (uiHover === _i3) {
             ctx.fillStyle = 'rgb(250,255,255)';
             ctx.globalAlpha = 0.7;
-            ctx.fillRect(_drawCall2.x - _drawCall2.width * _drawCall2.scale / 2, _drawCall2.y - _drawCall2.height * _drawCall2.scale / 2, _drawCall2.width * _drawCall2.scale, _drawCall2.height * _drawCall2.scale);
+            ctx.fillRect(_drawCall2.x - scaledWidth / 2 - storeOffset, _drawCall2.y - scaledHeight / 2, scaledWidth + storeOffset + 5, scaledHeight);
             ctx.globalAlpha = 1;
+            if (users[id].mode === 'help') {
+                ctx.font = "12px Arial";
+                ctx.fillStyle = 'rgb(0,0,0)';
+                var arr = _drawCall2.help.split(',');
+                for (var j = 0; j < arr.length; j++) {
+                    ctx.fillText(arr[j], _drawCall2.x - scaledWidth / 2 - storeOffset, _drawCall2.y + scaledHeight / 2 + 10 * (j + 1));
+                }
+            }
         }
         if (_drawCall2.spritesheet === 'ui') {
-            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * _drawCall2.col, UISpriteSizes.HEIGHT * _drawCall2.row, _drawCall2.width, _drawCall2.height, _drawCall2.x - _drawCall2.width * _drawCall2.scale / 2, _drawCall2.y - _drawCall2.height * _drawCall2.scale / 2, _drawCall2.width * _drawCall2.scale, _drawCall2.height * _drawCall2.scale);
+            ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * _drawCall2.col, UISpriteSizes.HEIGHT * _drawCall2.row, _drawCall2.width, _drawCall2.height, _drawCall2.x - scaledWidth / 2 - storeOffset, _drawCall2.y - scaledHeight / 2, scaledWidth, scaledHeight);
         } else if (_drawCall2.spritesheet === 'plant') {
-            ctx.drawImage(plantSpritesheet, plantSpriteSizes.WIDTH * _drawCall2.col, plantSpriteSizes.HEIGHT * _drawCall2.row, _drawCall2.width, _drawCall2.height, _drawCall2.x - _drawCall2.width * _drawCall2.scale / 2, _drawCall2.y - _drawCall2.height * _drawCall2.scale / 2, _drawCall2.width * _drawCall2.scale, _drawCall2.height * _drawCall2.scale);
+            ctx.drawImage(plantSpritesheet, plantSpriteSizes.WIDTH * _drawCall2.col, plantSpriteSizes.HEIGHT * _drawCall2.row, _drawCall2.width, _drawCall2.height, _drawCall2.x - scaledWidth / 2, _drawCall2.y - scaledHeight / 2, scaledWidth, scaledHeight);
         }
         if (_drawCall2.mode === 'water') {
             // water bar
@@ -159,15 +217,26 @@ var draw = function draw() {
             ctx.fillRect(_drawCall2.x + _offx, _drawCall2.y + _offy, users[id].water * _width / 100, 5);
             ctx.strokeRect(_drawCall2.x + _offx, _drawCall2.y + _offy, _width, 5);
         }
+        if (_drawCall2.mode === 'store') {
+            // draw karma
+            ctx.font = "24px Arial";
+            ctx.fillStyle = 'rgb(0,80,0)';
+            ctx.fillText(money, _drawCall2.x + scaledWidth / 2 - storeOffset + 5, _drawCall2.y + 10);
+        }
 
         ctx.globalAlpha = 1;
     }
 
-    ctx.font = "24px Arial";
-    ctx.fillStyle = 'rgb(105,195,75)';
-    var money = (users[id].points / 100).toFixed(2);
-    var length = ctx.measureText(money).width;
-    ctx.fillText(money, WIDTH - 50 - length, 50);
+    // draw help screen
+    if (users[id].mode === 'help') {
+        ctx.fillstyle = 'rgb(255,255,255)';
+    }
+
+    // draw store
+    if (users[id].mode === 'store') {
+
+        for (var _i4 = 0; _i4 < store.length; _i4++) {}
+    }
 };
 
 var displayUsers = function displayUsers() {
@@ -185,7 +254,9 @@ var displayUsers = function displayUsers() {
         if (rooms[roomNum].host === rooms[roomNum].UserIds[i]) {
             user.innerHTML += " (host)";
         }
-        user.innerHTML += ' (' + users[rooms[roomNum].UserIds[i]].mode + ')';
+        if (users[rooms[roomNum].UserIds[i]].mode !== "none") {
+            user.innerHTML += ' (' + users[rooms[roomNum].UserIds[i]].mode + ')';
+        }
         userList.appendChild(user);
     }
 };
@@ -236,7 +307,16 @@ var handleMove = function handleMove(e) {
     // check for ui hover
     uiHover = -1;
     for (var i = ui.length - 1; i >= 0; i--) {
-        if (Math.abs(newX - ui[i].x) < ui[i].width * ui[i].scale / 2 && Math.abs(newY - ui[i].y) < ui[i].height * ui[i].scale / 2) {
+        var storeOffset = 0;
+        if (ui[i].mode === 'store') {
+            ctx.font = "24px Arial";
+            var money = (users[id].points / 100).toFixed(2);
+            storeOffset = ctx.measureText(money).width;
+            if (storeOffset < ctx.measureText('000.00').width) {
+                storeOffset = ctx.measureText('000.00').width;
+            }
+        }
+        if (Math.abs(newX - (ui[i].x - storeOffset / 2)) < ui[i].width * ui[i].scale / 2 + storeOffset / 2 + 5 && Math.abs(newY - ui[i].y) < ui[i].height * ui[i].scale / 2) {
             uiHover = i;
             break;
         }
@@ -254,13 +334,17 @@ var handleMove = function handleMove(e) {
 var handleClick = function handleClick(e) {
     if (e.button === 0) {
         if (uiHover >= 0) {
-            socket.emit('changeMode', ui[uiHover].mode);
+            if (ui[uiHover].mode !== users[id].mode) {
+                socket.emit('changeMode', ui[uiHover].mode);
+            } else {
+                socket.emit('changeMode', 'none');
+            }
         } else if (users[id].mode === 'water') {
             socket.emit('changeMode', 'watering');
         } else if (users[id].mode === 'seed') {
             socket.emit('newPlant', { x: users[id].x, type: 'daisy' });
         } else {
-            if (hoverTarget >= 0) {
+            if (hoverTarget >= 0 && hoverTarget !== hoverLock) {
                 hoverLock = hoverTarget;
             } else if (hoverLock >= 0) {
                 hoverLock = -1;
@@ -295,7 +379,8 @@ var setupUI = function setupUI() {
         height: 130,
         width: 160,
         scale: 0.70,
-        mode: 'water'
+        mode: 'water',
+        help: 'Watering Can:,-refills over time'
     });
     // seed
     ui.push({
@@ -307,22 +392,22 @@ var setupUI = function setupUI() {
         height: 40,
         width: 60,
         scale: 1,
-        mode: 'seed'
+        mode: 'seed',
+        help: 'Daisy Seed:,-requires water to grow'
     });
     // store
-    /*
     ui.push({
-        x: WIDTH - 80,
-        y: 50,
-        spritesheet: 'ui,
+        x: WIDTH - 60,
+        y: 40,
+        spritesheet: 'ui',
         row: 2,
         col: 1,
-        height: 80,
-        width: 50,
-        scale: 1,
-        mode: 'store'
-    })
-    */
+        height: 55,
+        width: 55,
+        scale: .6,
+        mode: 'store',
+        help: 'Store:,-spend Karma here'
+    });
     // help
     ui.push({
         x: WIDTH - 50,
@@ -333,9 +418,55 @@ var setupUI = function setupUI() {
         height: 80,
         width: 50,
         scale: .9,
-        mode: 'help'
+        mode: 'help',
+        help: 'Help Button'
     });
     console.log('ui set up');
+};
+
+var setupStore = function setupStore() {
+    // water refill
+    ui.push({
+        x: WIDTH - 60,
+        y: 60,
+        spritesheet: 'ui',
+        row: 0,
+        col: 0,
+        height: 130,
+        width: 160,
+        scale: 0.70,
+        item: 'water refill',
+        price: 200,
+        description: 'refills watering can'
+    });
+    // daisy seed
+    ui.push({
+        x: WIDTH - 60,
+        y: 50,
+        spritesheet: 'plant',
+        row: 0,
+        col: 0,
+        height: 40,
+        width: 60,
+        scale: 1,
+        item: 'daisy',
+        price: 100,
+        help: 'Daisy Seed, requires water to grow'
+    });
+    // store
+    ui.push({
+        x: WIDTH - 60,
+        y: 40,
+        spritesheet: 'ui',
+        row: 2,
+        col: 1,
+        height: 55,
+        width: 55,
+        scale: .6,
+        mode: 'store',
+        help: 'Store, spend Karma here'
+    });
+    console.log('store set up');
 };
 
 var init = function init() {
@@ -404,6 +535,16 @@ var init = function init() {
         });
         messageField.value = "";
         e.preventDefault();
+    });
+
+    document.querySelector("#karmaButton5").addEventListener('click', function (e) {
+        socket.emit('buyKarma', 500);
+    });
+    document.querySelector("#karmaButton10").addEventListener('click', function (e) {
+        socket.emit('buyKarma', 1000);
+    });
+    document.querySelector("#karmaButton50").addEventListener('click', function (e) {
+        socket.emit('buyKarma', 5000);
     });
 
     setupUI();
