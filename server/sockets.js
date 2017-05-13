@@ -12,6 +12,7 @@ const HEIGHT = 500;
 const GROUND_LEVEL = 80;
 const WATER_SPREAD = 85;
 const WATER_OFFSET = 70;
+const PLANT_PROX = 20;
 const PLANTS = {
   daisy: {
     SPRITE_ROW: 0,
@@ -22,6 +23,10 @@ const PLANTS = {
     WIDTH: [60, 80, 80, 80],
   },
 };
+const STORE = {
+  WATER: 200,
+  DAISY: 100,
+};
 
 const randColor = () => {
   const red = Math.floor((Math.random() * 255) + 0);
@@ -29,7 +34,7 @@ const randColor = () => {
 };
 
 const checkWaterColl = (x1, x2) => (x1 - x2 <= WATER_SPREAD + WATER_OFFSET &&
-                                    x1 - x2 >= WATER_OFFSET);
+    x1 - x2 >= WATER_OFFSET);
 
 // create a new room
 const createNewRoom = () => {
@@ -60,7 +65,7 @@ const createNewRoom = () => {
       }
       newRoom.Plants[i] = plant;
     }
-    // io.sockets.in(newRoom.roomName).emit('updateAllPlants', newRoom.Plants);
+        // io.sockets.in(newRoom.roomName).emit('updateAllPlants', newRoom.Plants);
   };
 
   newRoom.Func.checkWatering = function () {
@@ -78,28 +83,22 @@ const createNewRoom = () => {
               if (checkWaterColl(user.x, newRoom.Plants[j].x) && newRoom.Plants[j].water < 100) {
                 newRoom.Plants[j].water++;
                 user.points++;
-/*
-                io.sockets.in(newRoom.roomName).emit('updatePlant', {
-                  index: i, plant: newRoom.Plants[i],
-                });
-                */
               }
             }
             user.water--;
           }
           Users[newRoom.Watering[i]] = user;
-/*
-          io.sockets.in(newRoom.roomName).emit('updateUsers', {
-            user,
-          });
-          */
         }
       }
     }
   };
 
   newRoom.Func.syncClients = function () {
-    io.sockets.in(newRoom.roomName).emit('syncRoom', { Plants: newRoom.Plants, Users, Time: new Date().getTime() });
+    io.sockets.in(newRoom.roomName).emit('syncRoom', {
+      Plants: newRoom.Plants,
+      Users,
+      Time: new Date().getTime(),
+    });
   };
 
   Rooms.push(newRoom);
@@ -138,7 +137,7 @@ const onJoin = (sock) => {
       water: 100,
       mode: 'none',
       seeds: 5,
-      // lastUpdate: new Date().getTime()
+            // lastUpdate: new Date().getTime()
     };
 
         // add name to indicate it is taken
@@ -206,24 +205,29 @@ const onJoin = (sock) => {
 
     // get movement on the canvas
   socket.on('userMove', (data) => {
-    // if (Users[socket.uid].mode !== 'none') {
-      // console.log(data);
     Users[socket.uid].x = data.x;
     Users[socket.uid].y = data.y;
-    // Users[socket.uid].lastUpdate = new Date.getTime();
-            // console.log(data);
-/*
-    io.sockets.in(socket.roomName).emit('moveUser', {
-      id: socket.uid,
-      newX: data.x,
-      newY: data.y,
-    });
-*/
-    // }
   });
 
   socket.on('newPlant', (data) => {
     console.log(data);
+        // check for proximity to other plants
+    if (Users[socket.uid].seeds <= 0) {
+      socket.emit('denied', {
+        message: 'server: no seeds',
+        code: 'plant',
+      });
+      return;
+    }
+    for (let i = 0; i < Rooms[socket.rNum].Plants.length; i++) {
+      if (Math.abs(data.x - Rooms[socket.rNum].Plants[i].x) < PLANT_PROX) {
+        socket.emit('denied', {
+          message: 'server: too close to another plant',
+          code: 'plant',
+        });
+        return;
+      }
+    }
     const newPlant = {
       x: data.x,
       y: HEIGHT - GROUND_LEVEL,
@@ -239,39 +243,56 @@ const onJoin = (sock) => {
       height: PLANTS[data.type].HEIGHT[0],
       width: PLANTS[data.type].WIDTH[0],
       spriteRow: PLANTS[data.type].SPRITE_ROW,
-      //lastUpdate: new Date.getTime()
+            //lastUpdate: new Date.getTime()
     };
+
     Rooms[socket.rNum].Plants.push(newPlant);
-    // const newIndex = Rooms[socket.rNum].Plants.length - 1;
-      /*
-    io.sockets.in(socket.roomName).emit('updatePlant', {
-      index: newIndex, plant: Rooms[socket.rNum].Plants[newIndex],
-    });
-    */
+    Users[socket.uid].seeds--;
   });
 
   socket.on('updateUser', (data) => {
     Users[data.id] = data;
-    // Users[data.id].lastUpdate = new Date.getTime();
-/*
-    io.sockets.in(socket.roomName).emit('updateUsers', {
-      user: Users[data.id],
-    });
-    */
   });
 
-
+    // change mode on button press
   socket.on('changeMode', (data) => {
     Users[socket.uid].mode = data;
     if (data === 'watering') {
       Rooms[socket.rNum].Watering.push(socket.uid);
     }
-    // Users[socket.uid].lastUpdate = new Date.getTime();
-/*
-    io.sockets.in(socket.roomName).emit('updateUsers', {
-      user: Users[socket.uid],
-    });
-*/
+  });
+
+  socket.on('buyItem', (data) => {
+    if (Users[socket.uid].points < STORE[data]) {
+      socket.emit('denied', {
+        message: 'server: not enough karma',
+        code: 'store',
+      });
+      return;
+    }
+    switch (data) {
+      case 'WATER':
+        if (Users[socket.uid].water >= 100) {
+          socket.emit('denied', {
+            message: 'server: water already full',
+            code: 'store',
+          });
+          return;
+        }
+        Users[socket.uid].water = 100;
+        Users[socket.uid].points -= STORE[data];
+        break;
+      case 'DAISY':
+        Users[socket.uid].seeds++;
+        Users[socket.uid].points -= STORE[data];
+        break;
+      default:
+        socket.emit('denied', {
+          message: 'server: not an item',
+          code: 'store',
+        });
+        break;
+    }
   });
 
   socket.on('changeName', (data) => {
@@ -295,13 +316,13 @@ const onJoin = (sock) => {
       Names[newName] = socket.uid;
             // set new name
       Users[socket.uid].name = newName;
-      // Users[socket.uid].lastUpdate = new Date.getTime();
+            // Users[socket.uid].lastUpdate = new Date.getTime();
             // update clients
-/*
-      io.sockets.in(socket.roomName).emit('updateUsers', {
-        user: Users[socket.uid],
-      });
-      */
+            /*
+                  io.sockets.in(socket.roomName).emit('updateUsers', {
+                    user: Users[socket.uid],
+                  });
+                  */
     }
   });
 
@@ -321,7 +342,7 @@ const updatePlantGrowth = () => {
   for (let i = 0; i < Rooms.length; i++) {
     Rooms[i].Func.updatePlants();
   }
-  // console.log('plants updated');
+    // console.log('plants updated');
 };
 
 const updateWater = () => {

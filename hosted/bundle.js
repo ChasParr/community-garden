@@ -204,6 +204,9 @@ var draw = function draw() {
             ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * _drawCall2.col, UISpriteSizes.HEIGHT * _drawCall2.row, _drawCall2.width, _drawCall2.height, _drawCall2.x - scaledWidth / 2 - storeOffset, _drawCall2.y - scaledHeight / 2, scaledWidth, scaledHeight);
         } else if (_drawCall2.spritesheet === 'plant') {
             ctx.drawImage(plantSpritesheet, plantSpriteSizes.WIDTH * _drawCall2.col, plantSpriteSizes.HEIGHT * _drawCall2.row, _drawCall2.width, _drawCall2.height, _drawCall2.x - scaledWidth / 2, _drawCall2.y - scaledHeight / 2, scaledWidth, scaledHeight);
+            ctx.font = "12px Arial";
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.fillText('x' + users[id].seeds, _drawCall2.x + scaledWidth / 3, _drawCall2.y + scaledHeight / 3);
         }
         if (_drawCall2.mode === 'water') {
             // water bar
@@ -227,15 +230,29 @@ var draw = function draw() {
         ctx.globalAlpha = 1;
     }
 
-    // draw help screen
-    if (users[id].mode === 'help') {
-        ctx.fillstyle = 'rgb(255,255,255)';
-    }
-
     // draw store
     if (users[id].mode === 'store') {
-
-        for (var _i4 = 0; _i4 < store.length; _i4++) {}
+        for (var _i4 = 0; _i4 < store.length; _i4++) {
+            var _drawCall3 = store[_i4];
+            var _scaledWidth = _drawCall3.width * _drawCall3.scale;
+            var _scaledHeight = _drawCall3.height * _drawCall3.scale;
+            if (storeHover === _i4) {
+                ctx.fillStyle = 'rgb(250,255,255)';
+                ctx.globalAlpha = 0.7;
+                ctx.fillRect(_drawCall3.x - _scaledWidth / 2, _drawCall3.y - _scaledHeight / 2, _scaledWidth, _scaledHeight);
+                ctx.globalAlpha = 1;
+            }
+            if (_drawCall3.spritesheet === 'ui') {
+                ctx.drawImage(UISpritesheet, UISpriteSizes.WIDTH * _drawCall3.col, UISpriteSizes.HEIGHT * _drawCall3.row, _drawCall3.width, _drawCall3.height, _drawCall3.x - _scaledWidth / 2, _drawCall3.y - _scaledHeight / 2, _scaledWidth, _scaledHeight);
+            } else if (_drawCall3.spritesheet === 'plant') {
+                ctx.drawImage(plantSpritesheet, plantSpriteSizes.WIDTH * _drawCall3.col, plantSpriteSizes.HEIGHT * _drawCall3.row, _drawCall3.width, _drawCall3.height, _drawCall3.x - _scaledWidth / 2, _drawCall3.y - _scaledHeight / 2, _scaledWidth, _scaledHeight);
+            }
+            // draw price
+            ctx.font = "12px Arial";
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.fillText(_drawCall3.item, _drawCall3.x - 30, _drawCall3.y + _scaledHeight / 2 + 15);
+            ctx.fillText((_drawCall3.price / 100).toFixed(2) + " karma", _drawCall3.x - 30, _drawCall3.y + _scaledHeight / 2 + 30);
+        }
     }
 };
 
@@ -282,12 +299,14 @@ var plantSpritesheet = void 0;
 var UISpritesheet = void 0;
 var draws = [];
 var ui = [];
+var store = [];
 var users = {};
 var rooms = [];
 var messages = [];
 var hoverTarget = -1;
 var hoverLock = -1;
 var uiHover = -1;
+var storeHover = -1;
 var lastUpdate = void 0;
 var waterFrame = 0;
 
@@ -304,46 +323,70 @@ var handleMove = function handleMove(e) {
 
     socket.emit('userMove', { x: newX, y: newY });
 
-    // check for ui hover
-    uiHover = -1;
-    for (var i = ui.length - 1; i >= 0; i--) {
-        var storeOffset = 0;
-        if (ui[i].mode === 'store') {
-            ctx.font = "24px Arial";
-            var money = (users[id].points / 100).toFixed(2);
-            storeOffset = ctx.measureText(money).width;
-            if (storeOffset < ctx.measureText('000.00').width) {
-                storeOffset = ctx.measureText('000.00').width;
+    // check for store hover
+    storeHover = -1;
+    if (users[id].mode === 'store') {
+        for (var i = store.length - 1; i >= 0; i--) {
+            if (Math.abs(newX - store[i].x) < store[i].width * store[i].scale && Math.abs(newY - store[i].y) < store[i].height * store[i].scale / 2) {
+                storeHover = i;
+                break;
             }
         }
-        if (Math.abs(newX - (ui[i].x - storeOffset / 2)) < ui[i].width * ui[i].scale / 2 + storeOffset / 2 + 5 && Math.abs(newY - ui[i].y) < ui[i].height * ui[i].scale / 2) {
-            uiHover = i;
-            break;
-        }
     }
-    // check for hover
-    hoverTarget = -1;
-    for (var _i = draws.length - 1; _i >= 0; _i--) {
-        if (Math.abs(newX - draws[_i].x) < draws[_i].width / 2 && draws[_i].y - newY < draws[_i].height && draws[_i].y - newY > 0) {
-            hoverTarget = _i;
-            break;
+    if (storeHover < 0) {
+        // check for ui hover
+        uiHover = -1;
+        for (var _i = ui.length - 1; _i >= 0; _i--) {
+            var storeOffset = 0;
+            if (ui[_i].mode === 'store') {
+                ctx.font = "24px Arial";
+                var money = (users[id].points / 100).toFixed(2);
+                storeOffset = ctx.measureText(money).width;
+                if (storeOffset < ctx.measureText('000.00').width) {
+                    storeOffset = ctx.measureText('000.00').width;
+                }
+            }
+            if (Math.abs(newX - (ui[_i].x - storeOffset / 2)) < ui[_i].width * ui[_i].scale / 2 + storeOffset / 2 + 5 && Math.abs(newY - ui[_i].y) < ui[_i].height * ui[_i].scale / 2) {
+                uiHover = _i;
+                break;
+            }
+        }
+        // check for hover
+        hoverTarget = -1;
+        for (var _i2 = draws.length - 1; _i2 >= 0; _i2--) {
+            if (Math.abs(newX - draws[_i2].x) < draws[_i2].width / 2 && draws[_i2].y - newY < draws[_i2].height && draws[_i2].y - newY > 0) {
+                hoverTarget = _i2;
+                break;
+            }
         }
     }
 };
 
 var handleClick = function handleClick(e) {
+    // left mouse button
     if (e.button === 0) {
-        if (uiHover >= 0) {
+        // buy from store
+        if (users[id].mode === 'store' && storeHover >= 0) {
+            socket.emit('buyItem', store[storeHover].name);
+        } else if (uiHover >= 0) {
+            // change mode
             if (ui[uiHover].mode !== users[id].mode) {
                 socket.emit('changeMode', ui[uiHover].mode);
             } else {
+                // drop mode
                 socket.emit('changeMode', 'none');
             }
+        } else if (users[id].mode === 'help') {
+            // leave help mode
+            socket.emit('changeMode', 'none');
         } else if (users[id].mode === 'water') {
+            // begin watering
             socket.emit('changeMode', 'watering');
         } else if (users[id].mode === 'seed') {
+            // plant seed
             socket.emit('newPlant', { x: users[id].x, type: 'daisy' });
         } else {
+            // lock or unlock hover target
             if (hoverTarget >= 0 && hoverTarget !== hoverLock) {
                 hoverLock = hoverTarget;
             } else if (hoverLock >= 0) {
@@ -351,6 +394,7 @@ var handleClick = function handleClick(e) {
             }
         }
     } else if (e.button === 2) {
+        // drop mode
         socket.emit('changeMode', 'none');
     }
 
@@ -359,6 +403,7 @@ var handleClick = function handleClick(e) {
 
 var endClick = function endClick(e) {
     if (users[id].mode === 'watering') {
+        // stop watering
         socket.emit('changeMode', 'water');
     }
     e.preventDefault();
@@ -426,45 +471,32 @@ var setupUI = function setupUI() {
 
 var setupStore = function setupStore() {
     // water refill
-    ui.push({
-        x: WIDTH - 60,
-        y: 60,
+    store.push({
+        x: WIDTH - 80,
+        y: 120,
         spritesheet: 'ui',
         row: 0,
         col: 0,
         height: 130,
         width: 160,
-        scale: 0.70,
+        scale: 0.50,
+        name: 'WATER',
         item: 'water refill',
-        price: 200,
-        description: 'refills watering can'
+        price: 200
     });
     // daisy seed
-    ui.push({
-        x: WIDTH - 60,
-        y: 50,
+    store.push({
+        x: WIDTH - 80,
+        y: 210,
         spritesheet: 'plant',
         row: 0,
         col: 0,
         height: 40,
         width: 60,
         scale: 1,
-        item: 'daisy',
-        price: 100,
-        help: 'Daisy Seed, requires water to grow'
-    });
-    // store
-    ui.push({
-        x: WIDTH - 60,
-        y: 40,
-        spritesheet: 'ui',
-        row: 2,
-        col: 1,
-        height: 55,
-        width: 55,
-        scale: .6,
-        mode: 'store',
-        help: 'Store, spend Karma here'
+        name: 'DAISY',
+        item: 'daisy seed',
+        price: 100
     });
     console.log('store set up');
 };
@@ -548,7 +580,7 @@ var init = function init() {
     });
 
     setupUI();
-
+    setupStore();
     canvas.onmousemove = handleMove;
     canvas.onmousedown = handleClick;
     canvas.onmouseup = endClick;

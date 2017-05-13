@@ -354,6 +354,13 @@ const draw = () => {
                 scaledWidth,
                 scaledHeight
             );
+            ctx.font = "12px Arial";
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.fillText(
+                'x' + users[id].seeds,
+                drawCall.x + scaledWidth / 3,
+                drawCall.y + scaledHeight / 3,
+            );
         }
         if (drawCall.mode === 'water') {
             // water bar
@@ -396,16 +403,62 @@ const draw = () => {
         ctx.globalAlpha = 1;
     }
     
-    // draw help screen
-    if (users[id].mode === 'help'){
-        ctx.fillstyle = 'rgb(255,255,255)';
-    }
-    
     // draw store
     if (users[id].mode === 'store'){
-        
         for (let i = 0; i < store.length; i++) {
-            
+            const drawCall = store[i];
+            let scaledWidth = drawCall.width * drawCall.scale;
+            let scaledHeight = drawCall.height * drawCall.scale;
+            if (storeHover === i) {
+                ctx.fillStyle = 'rgb(250,255,255)';
+                ctx.globalAlpha = 0.7;
+                ctx.fillRect(
+                    drawCall.x - scaledWidth / 2,
+                    drawCall.y - scaledHeight / 2,
+                    scaledWidth,
+                    scaledHeight
+                );
+                ctx.globalAlpha = 1;
+            }
+            if (drawCall.spritesheet === 'ui') {
+                ctx.drawImage(
+                    UISpritesheet,
+                    UISpriteSizes.WIDTH * drawCall.col,
+                    UISpriteSizes.HEIGHT * drawCall.row,
+                    drawCall.width,
+                    drawCall.height,
+                    drawCall.x - scaledWidth / 2,
+                    drawCall.y - scaledHeight / 2,
+                    scaledWidth,
+                    scaledHeight
+                );
+            } else if (drawCall.spritesheet === 'plant') {
+                ctx.drawImage(
+                    plantSpritesheet,
+                    plantSpriteSizes.WIDTH * drawCall.col,
+                    plantSpriteSizes.HEIGHT * drawCall.row,
+                    drawCall.width,
+                    drawCall.height,
+                    drawCall.x - scaledWidth / 2,
+                    drawCall.y - scaledHeight / 2,
+                    scaledWidth,
+                    scaledHeight
+                );
+            }
+            // draw price
+            ctx.font = "12px Arial";
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.fillText(
+                drawCall.item, 
+                drawCall.x - 30,
+                drawCall.y + scaledHeight / 2 + 15
+            );
+            ctx.fillText(
+                (drawCall.price / 100).toFixed(2) + " karma", 
+                drawCall.x - 30,
+                drawCall.y + scaledHeight / 2 + 30
+            );
+
         }
     }
 
