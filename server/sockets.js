@@ -172,26 +172,29 @@ const onJoin = (sock) => {
       delete Names[Users[socket.uid].name];
       delete Users[socket.uid];
     }
-    Rooms[socket.rNum].UserIds.splice(Rooms[socket.rNum].UserIds.indexOf(socket.uid), 1);
-    if (Rooms[socket.rNum].UserIds.length > 0) {
-      if (socket.uid === Rooms[socket.rNum].host) {
-        io.sockets.in(socket.roomName).emit('hostLeft');
-        Rooms[socket.rNum].host = Rooms[socket.rNum].UserIds[0];
-        io.sockets.in(socket.roomName).emit('newMessage', {
-          message: `${Rooms[socket.rNum].host} is new host`,
-          color: 'black',
-        });
-        console.log(`${Rooms[socket.rNum].host} is new host`);
-        io.sockets.in(socket.roomName).emit('updateRoom', {
-          room: Rooms[socket.rNum],
-        });
+    if (Rooms[socket.rNum] != null) {
+      Rooms[socket.rNum].UserIds.splice(
+            Rooms[socket.rNum].UserIds.indexOf(socket.uid), 1);
+      if (Rooms[socket.rNum].UserIds.length > 0) {
+        if (socket.uid === Rooms[socket.rNum].host) {
+          io.sockets.in(socket.roomName).emit('hostLeft');
+          Rooms[socket.rNum].host = Rooms[socket.rNum].UserIds[0];
+          io.sockets.in(socket.roomName).emit('newMessage', {
+            message: `${Rooms[socket.rNum].host} is new host`,
+            color: 'black',
+          });
+          console.log(`${Rooms[socket.rNum].host} is new host`);
+          io.sockets.in(socket.roomName).emit('updateRoom', {
+            room: Rooms[socket.rNum],
+          });
+        }
+      } else {
+        Rooms[socket.rNum].host = -1;
       }
-    } else {
-      Rooms[socket.rNum].host = -1;
+      io.sockets.in(socket.roomName).emit('removeUser', {
+        id: socket.uid,
+      });
     }
-    io.sockets.in(socket.roomName).emit('removeUser', {
-      id: socket.uid,
-    });
     console.log('someone left');
   });
 
